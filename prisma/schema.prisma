@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model appointments {
+  meeting_date   DateTime @db.Date
+  p_id           Int
+  s_id           Int
+  purpose        String   @db.VarChar(255)
+  start_time     DateTime @db.Time(0)
+  end_time       DateTime @db.Time(0)
+  location       String?  @db.VarChar(255)
+  meeting_link   String?  @db.VarChar(255)
+  meeting_status Boolean?
+  patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
+  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
+
+  @@id([meeting_date, p_id, s_id])
+  @@index([p_id], map: "p_id")
+  @@index([s_id], map: "s_id")
+}
+
+model departments {
+  dept_id        Int              @id
+  dept_name      String           @db.VarChar(50)
+  description    String?          @db.VarChar(255)
+  dept_locations dept_locations[]
+  staff          staff[]
+}
+
+model dept_locations {
+  uuid        Int         @id @default(autoincrement())
+  dept_id     Int
+  location    String      @db.VarChar(255)
+  departments departments @relation(fields: [dept_id], references: [dept_id], onDelete: NoAction, onUpdate: NoAction, map: "dept_locations_ibfk_1")
+
+  @@index([dept_id], map: "dept_id")
+}
+
+model job_history {
+  s_id       Int
+  job_id     Int
+  start_date DateTime @db.Date
+  job_status Boolean
+  staff      staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_1")
+  jobs       jobs     @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_2")
+
+  @@id([s_id, job_id])
+  @@index([job_id], map: "job_id")
+}
+
+model jobs {
+  job_id      Int           @id @default(autoincrement())
+  job_title   String        @db.VarChar(50)
+  description String        @db.VarChar(255)
+  job_history job_history[]
+  staff       staff[]
+}
+
+model patients {
+  p_id         Int            @id
+  address      String?        @db.VarChar(255)
+  allergies    String?        @db.VarChar(255)
+  appointments appointments[]
+  users        users          @relation(fields: [p_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "patients_ibfk_1")
+  treatments   treatments[]
+}
+
+model reports {
+  report_id   Int        @id @default(autoincrement())
+  t_id        Int
+  workload    Int?
+  performance Int?
+  billing     Decimal    @db.Decimal(10, 2)
+  treatments  treatments @relation(fields: [t_id], references: [t_id], onDelete: NoAction, onUpdate: NoAction, map: "reports_ibfk_1")
+
+  @@index([t_id], map: "t_id")
+}
+
+model roles {
+  role_id   Int     @id @default(autoincrement())
+  role_name String? @db.VarChar(20)
+  users     users[]
+}
+
+model schedules {
+  scheduled_id   Int      @id @default(autoincrement())
+  scheduled_date DateTime @db.Date
+  s_id           Int
+  start_time     DateTime @db.Time(0)
+  end_time       DateTime @db.Time(0)
+  description    String?  @db.VarChar(255)
+  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "schedules_ibfk_1")
+
+  @@index([s_id], map: "s_id")
+}
+
+model staff {
+  s_id           Int            @id
+  job_id         Int
+  dept_id        Int
+  manager_id     Int?
+  qualifications String         @db.VarChar(255)
+  salary         Decimal        @db.Decimal(10, 2)
+  appointments   appointments[]
+  job_history    job_history[]
+  schedules      schedules[]
+  users          users          @relation(fields: [s_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_1")
+  jobs           jobs           @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_2")
+  departments    departments    @relation(fields: [dept_id], references: [dept_id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_3")
+  staff          staff?         @relation("staffTostaff", fields: [manager_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_4")
+  other_staff    staff[]        @relation("staffTostaff")
+  treatments     treatments[]
+
+  @@index([dept_id], map: "dept_id")
+  @@index([job_id], map: "job_id")
+  @@index([manager_id], map: "manager_id")
+}
+
+model treatments {
+  t_id           Int       @id @default(autoincrement())
+  p_id           Int
+  doctor_id      Int
+  description    String    @db.VarChar(255)
+  treatment_date DateTime  @db.DateTime(0)
+  reports        reports[]
+  patients       patients  @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "treatments_ibfk_1")
+  staff          staff     @relation(fields: [doctor_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "treatments_ibfk_2")
+
+  @@index([doctor_id], map: "doctor_id")
+  @@index([p_id], map: "p_id")
+}
+
+model users {
+  id         Int       @id @default(autoincrement())
+  role       Int
+  username   String    @unique(map: "username") @db.VarChar(20)
+  pw         String    @db.VarChar(20)
+  Fname      String    @db.VarChar(50)
+  Minit      String?   @db.VarChar(50)
+  Lname      String    @db.VarChar(50)
+  phone      String    @db.VarChar(11)
+  email      String    @unique(map: "email") @db.VarChar(50)
+  sex        String?   @db.Char(1)
+  birth_date DateTime? @db.Date
+  patients   patients?
+  staff      staff?
+  roles      roles     @relation(fields: [role], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
+
+  @@index([role], map: "role")
+}
