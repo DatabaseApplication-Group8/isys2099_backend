@@ -9,28 +9,30 @@ import { ApiTags } from '@nestjs/swagger';
 export class StaffController {
   constructor(private readonly staffService: StaffService) {}
 
-  @Post()
-  create(@Body() createStaffDto: CreateStaffDto) {
-    return this.staffService.create(createStaffDto);
-  }
-
   @Get()
   findAll() {
     return this.staffService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.staffService.findOne(+id);
+  @Get(':number')
+  findOneBySalary(@Param('number') number: number) {
+    return this.staffService.findOneBySalary(number);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
-    return this.staffService.update(+id, updateStaffDto);
-  }
+  // @Post()
+  // create(@Body() createStaffDto: CreateStaffDto) {
+  //   return this.staffService.create(createStaffDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.staffService.remove(+id);
-  }
+  
+
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
+  //   return this.staffService.update(+id, updateStaffDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.staffService.remove(+id);
+  // }
 }
