@@ -20,20 +20,21 @@
 
 DROP TABLE IF EXISTS `appointments`;
 CREATE TABLE `appointments` (
-  `meeting_date` date NOT NULL,
-  `p_id` int NOT NULL,
-  `s_id` int NOT NULL,
-  `purpose` varchar(255) NOT NULL,
-  `start_time` time NOT NULL,
-  `end_time` time NOT NULL,
-  `location` varchar(255) DEFAULT NULL,
-  `meeting_link` varchar(255) DEFAULT NULL,
-  `meeting_status` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`meeting_date`,`p_id`,`s_id`),
-  KEY `p_id` (`p_id`),
-  KEY `s_id` (`s_id`),
-  CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`p_id`) REFERENCES `patients` (`p_id`),
-  CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`s_id`) REFERENCES `staff` (`s_id`)
+    `appointment_id` int NOT NULL AUTO_INCREMENT,
+    `meeting_date` date NOT NULL,
+    `p_id` int NOT NULL,
+    `s_id` int NOT NULL,
+    `purpose` varchar(255) NOT NULL,
+    `start_time` time NOT NULL,
+    `end_time` time NOT NULL,
+    `location` varchar(255) DEFAULT NULL,
+    `meeting_link` varchar(255) DEFAULT NULL,
+    `meeting_status` tinyint(1) DEFAULT NULL,
+    PRIMARY KEY (`appointment_id`),
+    KEY `p_id` (`p_id`),
+    KEY `s_id` (`s_id`),
+    CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`p_id`) REFERENCES `patients` (`p_id`),
+    CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`s_id`) REFERENCES `staff` (`s_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 DROP TABLE IF EXISTS `departments`;
