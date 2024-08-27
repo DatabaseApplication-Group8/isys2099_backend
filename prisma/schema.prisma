@@ -8,6 +8,7 @@ datasource db {
 }
 
 model appointments {
+  appointment_id Int      @id @default(autoincrement())
   meeting_date   DateTime @db.Date
   p_id           Int
   s_id           Int
@@ -20,7 +21,6 @@ model appointments {
   patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
   staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
 
-  @@id([meeting_date, p_id, s_id])
   @@index([p_id], map: "p_id")
   @@index([s_id], map: "s_id")
 }

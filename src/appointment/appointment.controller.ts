@@ -3,6 +3,7 @@ import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { Prisma } from '@prisma/client';
 
 @Controller('appointment')
 @ApiTags('Appointment')
@@ -19,18 +20,14 @@ export class AppointmentController {
     return this.appointmentService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appointmentService.findOne(+id);
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.appointmentService.findOne(+id);
+  // }
+
+  @Patch()
+  update(@Body() updateAppointmentDto: UpdateAppointmentDto) {
+    return this.appointmentService.cancel(updateAppointmentDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
-    return this.appointmentService.update(+id, updateAppointmentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentService.remove(+id);
-  }
 }
