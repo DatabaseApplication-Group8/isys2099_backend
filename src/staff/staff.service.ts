@@ -3,10 +3,13 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
+import { schedules, staff } from '@prisma/client';
 
+
+// repo
 @Injectable()
 export class StaffService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll() {
     // SELECT * FROM staff JOIN users ON users.id = staff.s_id
@@ -40,9 +43,96 @@ export class StaffService {
     } catch (err) {
       throw Error("Unsuccess")
     }
-    
+
   }
-  
+
+  // add new staff
+  async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
+    try {
+      await this.prisma.staff.create({
+        data: {
+          s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
+          salary: createStaffDto.salary,
+          dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
+          job_id: typeof createStaffDto.job_id == 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
+          manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
+          qualifications: createStaffDto.qualifications
+        }
+      });
+    } catch (error) {
+      throw new Error("Failed to add new staff member");
+    }
+  }
+
+  // listStaffByName
+  async listStaffByName(order: 'asc' | 'desc'): Promise<void> {
+    try {
+      const data = await this.prisma.staff.findMany({
+        orderBy: {
+          users: {
+            Fname: order
+          }
+        }
+      })
+    } catch (error) {
+      throw new Error("Failed to list staff by name");
+    }
+  }
+
+  // List Staff By department
+  async listStaffByDepartment(dept_id: number): Promise<void> {
+    try {
+      const data = await this.prisma.staff.findMany({
+        where: {
+          dept_id: dept_id,
+        }
+      })
+    } catch (error) {
+      throw new Error("Failed to list staff by department");
+    }
+  }
+
+
+  // update staff Info
+  async updateStaffInfo(s_id: number, UpdateStaffDto: UpdateStaffDto): Promise<void> {
+    try {
+      await this.prisma.staff.update({
+        where: {
+          s_id: s_id,
+        },
+        data: {
+          salary: UpdateStaffDto.salary,
+          dept_id: UpdateStaffDto.dept_id,
+          job_id: UpdateStaffDto.job_id,
+          manager_id: UpdateStaffDto.manager_id,
+          qualifications: UpdateStaffDto.qualifications
+        }
+      })
+
+    } catch (error) {
+      throw new Error("Failed to update staff info");
+    }
+  }
+
+  async viewStaffSchedule(s_id: number): Promise<schedules[]> {
+    try {
+      var schedule = await this.prisma.staff.findUnique({
+        where: {
+          s_id: s_id,
+        },
+        select: {
+          schedules: true
+        }
+      }
+      )
+      return schedule.schedules
+
+    }
+    catch (error) {
+      throw new Error("Failed to view staff schedule");
+    }
+  }
+
   // create(createStaffDto: CreateStaffDto) {
   //   return 'This action adds a new staff';
   // }
