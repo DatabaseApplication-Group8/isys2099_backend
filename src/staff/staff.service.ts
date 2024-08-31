@@ -3,7 +3,7 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
-import { schedules, staff } from '@prisma/client';
+import { Prisma, schedules, staff } from '@prisma/client';
 
 
 // repo
@@ -47,20 +47,75 @@ export class StaffService {
   }
 
   // add new staff
+  // async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
+  //   try {
+  //     await this.prisma.staff.create({
+  //       data: {
+  //         s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
+  //         salary: createStaffDto.salary,
+  //         dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
+  //         job_id: typeof createStaffDto.job_id == 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
+  //         manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
+  //         qualifications: createStaffDto.qualifications
+  //       }
+  //     });
+  //   } catch (error) {
+  //     throw new Error("Failed to add new staff member");
+  //   }
+  // }
   async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
     try {
+      
+      const isJobIdExist = await this.prisma.jobs.findUnique({
+        where:{
+          job_id : typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
+        }
+      })
+
+      const isDeptIDExist = await this.prisma.departments.findUnique({
+        where:{
+          dept_id : typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
+        }
+      })
+
+      const isManagerIDExist = await this.prisma.staff.findUnique({
+        where:{
+          s_id : typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
+        }
+      })
+
+      if (!isJobIdExist){
+        throw new Error(`Job ID ${createStaffDto.job_id} does not exist`)
+      }
+
+      if (!isDeptIDExist){
+        throw new Error(`Department ID ${createStaffDto.dept_id} does not exist`)
+      }
+
+      // if (!isManagerIDExist){
+      //   throw new Error(`Manager ID ${createStaffDto.manager_id} does not exist`)
+      // }
+
       await this.prisma.staff.create({
         data: {
           s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
           salary: createStaffDto.salary,
           dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
-          job_id: typeof createStaffDto.job_id == 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
+          job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
           manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
           qualifications: createStaffDto.qualifications
         }
       });
     } catch (error) {
-      throw new Error("Failed to add new staff member");
+      console.error("Failed to add new staff member: ", error);
+      // Optionally, log specific error details if Prisma throws known error types
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        console.error("Error details:", {
+          code: error.code,
+          meta: error.meta
+        });
+      }
+      throw new Error("Failed to add new staff member: " + error.message);
     }
   }
 
