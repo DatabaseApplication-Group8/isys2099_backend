@@ -153,7 +153,7 @@ CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `role` int NOT NULL,
   `username` varchar(20) NOT NULL,
-  `pw` varchar(20) NOT NULL,
+  `pw` varchar(128) NOT NULL,
   `Fname` varchar(50) NOT NULL,
   `Minit` varchar(50) DEFAULT NULL,
   `Lname` varchar(50) NOT NULL,

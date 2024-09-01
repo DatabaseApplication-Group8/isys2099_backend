@@ -122,7 +122,7 @@ model users {
   id         Int       @id @default(autoincrement())
   role       Int
   username   String    @unique(map: "username") @db.VarChar(20)
-  pw         String    @db.VarChar(20)
+  pw         String    @db.VarChar(128)
   Fname      String    @db.VarChar(50)
   Minit      String?   @db.VarChar(50)
   Lname      String    @db.VarChar(50)
