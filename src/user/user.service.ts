@@ -6,10 +6,16 @@ import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { hashPasswordHelper } from 'src/helpers/util';
 import aqp from 'api-query-params';
+import { PatientService } from 'src/patient/patient.service';
+import { CreatePatientDto } from 'src/patient/dto/create-patient.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private patientService : PatientService
+  ) {}
+
 
   isEmailExist = async (email: string) => {
     const user = await this.prisma.users.findUnique({
@@ -21,7 +27,7 @@ export class UserService {
     return false;
   };
   async create(createUserDto: CreateUserDto) {
-    const {
+    var {
       username,
       pw,
       Fname,
@@ -33,6 +39,15 @@ export class UserService {
       birth_date,
       roles,
     } = createUserDto;
+    if (sex) {
+      if (sex === 'female') {
+        sex = 'F';
+      } else if (sex === 'male') {
+        sex = 'M';
+      } else {
+        sex = 'O';
+      }
+    }
     const isExist = await this.isEmailExist(email);
     if (isExist) {
       throw new BadRequestException(
@@ -41,6 +56,7 @@ export class UserService {
     }
 
     const hashPassword = await hashPasswordHelper(pw);
+   
     const user = await this.prisma.users.create({
       data: {
         username,
@@ -55,6 +71,15 @@ export class UserService {
         role: roles,
       },
     });
+
+    const newPatient: CreatePatientDto = {
+      p_id: user.id,
+      address: createUserDto.address,
+      allergies: createUserDto.allergies
+    };
+    if(createUserDto.roles === 3){
+      await this.patientService.create(newPatient);
+    }
     return {
       id: user.id,
     };
@@ -99,8 +124,7 @@ export class UserService {
       },
     });
 
-    return {data: data, status: 200, total: data.length};
-    
+    return { data: data, status: 200, total: data.length };
   }
 
   // async findOneByName(name: string) {

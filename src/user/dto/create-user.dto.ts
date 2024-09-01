@@ -9,4 +9,7 @@ export class CreateUserDto {
   sex?: string | null;
   birth_date?: Date | string | null;
   roles: number;
+  p_id?: number;
+  address?: string;
+  allergies?: string;
 }
