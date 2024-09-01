@@ -1,3 +1,4 @@
+import { schedules } from '@prisma/client';
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
@@ -41,6 +42,11 @@ export class StaffController {
   @Patch(':id')
   updateStaffInfo(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
     return this.staffService.updateStaffInfo(+id, updateStaffDto);
+  }
+
+  @Patch(':id')
+  updateStaffSchedule(@Param('id') id: string, @Body() schedules: schedules) {
+    return this.staffService.updateStaffSchedule(+id, schedules);
   }
 
 
