@@ -65,30 +65,30 @@ export class StaffService {
   // }
   async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
     try {
-      
+
       const isJobIdExist = await this.prisma.jobs.findUnique({
-        where:{
-          job_id : typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
+        where: {
+          job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
         }
       })
 
       const isDeptIDExist = await this.prisma.departments.findUnique({
-        where:{
-          dept_id : typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
+        where: {
+          dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
         }
       })
 
       const isManagerIDExist = await this.prisma.staff.findUnique({
-        where:{
-          s_id : typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
+        where: {
+          s_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
         }
       })
 
-      if (!isJobIdExist){
+      if (!isJobIdExist) {
         throw new Error(`Job ID ${createStaffDto.job_id} does not exist`)
       }
 
-      if (!isDeptIDExist){
+      if (!isDeptIDExist) {
         throw new Error(`Department ID ${createStaffDto.dept_id} does not exist`)
       }
 
@@ -185,6 +185,86 @@ export class StaffService {
     }
     catch (error) {
       throw new Error("Failed to view staff schedule");
+    }
+  }
+
+  // Update staff schedule
+  async updateStaffSchedule(s_id: number, newSchedules: schedules): Promise<void> {
+    try {
+
+      //check clash schedule
+
+      const existingSchedule = await this.prisma.staff.findUnique({
+        where: {
+          s_id: s_id
+        },
+        select:{
+          schedules: true
+        }
+      })
+      
+      if (!existingSchedule || !existingSchedule.schedules) {
+        throw new Error("No schedule found")
+      }
+
+      const existingPatientAppointment = await this.prisma.staff.findUnique({
+        where :{
+          s_id : s_id
+        },
+        select:{
+          appointments: true
+        }
+      })
+
+      if (!existingPatientAppointment || !existingPatientAppointment.appointments){
+        throw new Error("No appointment found")
+      }
+
+      // check if clash with existing staff's schedule
+      existingSchedule.schedules.forEach(element => {
+        if (element.start_time === newSchedules.start_time 
+          || element.end_time === newSchedules.end_time 
+          || element.start_time > newSchedules.start_time && element.end_time < newSchedules.end_time
+          || element.start_time > newSchedules.start_time && element.start_time < newSchedules.end_time
+          || element.end_time > newSchedules.start_time && element.end_time < newSchedules.end_time
+          || element.start_time > newSchedules.start_time && element.end_time > newSchedules.end_time) {
+          throw new Error("Clash schedule")
+        }
+      });
+      
+      // check if clash with existing patient's appointment
+      existingSchedule.schedules.forEach(element => {
+        if (element.start_time === newSchedules.start_time 
+          || element.end_time === newSchedules.end_time 
+          || element.start_time > newSchedules.start_time && element.end_time < newSchedules.end_time
+          || element.start_time > newSchedules.start_time && element.start_time < newSchedules.end_time
+          || element.end_time > newSchedules.start_time && element.end_time < newSchedules.end_time
+          || element.start_time > newSchedules.start_time && element.end_time > newSchedules.end_time) {
+          throw new Error("Clash schedule")
+        }
+      });
+
+      await this.prisma.staff.update({
+        where: {
+          s_id: s_id,
+        },
+        data: {
+          schedules: {
+            set: [newSchedules]
+          }
+        }
+      })
+
+    } catch (error) {
+      console.error("Failed to update staff schedule: ", error);
+      // Optionally, log specific error details if Prisma throws known error types
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        console.error("Error details:", {
+          code: error.code,
+          meta: error.meta
+        });
+      }
+      throw new Error("Failed to update staff schedule: " + error.message);
     }
   }
 
