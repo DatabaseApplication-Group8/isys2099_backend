@@ -7,24 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model appointments {
-  appointment_id Int      @id @default(autoincrement())
-  meeting_date   DateTime @db.Date
-  p_id           Int
-  s_id           Int
-  purpose        String   @db.VarChar(255)
-  start_time     DateTime @db.Time(0)
-  end_time       DateTime @db.Time(0)
-  location       String?  @db.VarChar(255)
-  meeting_link   String?  @db.VarChar(255)
-  meeting_status Boolean?
-  patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
-  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
-
-  @@index([p_id], map: "p_id")
-  @@index([s_id], map: "s_id")
-}
-
 model departments {
   dept_id        Int              @id
   dept_name      String           @db.VarChar(50)
@@ -153,4 +135,22 @@ model users {
   roles      roles     @relation(fields: [role], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
 
   @@index([role], map: "role")
+}
+
+model appointments {
+  appointment_id Int      @id @default(autoincrement())
+  meeting_date   DateTime @db.Date
+  p_id           Int
+  s_id           Int
+  purpose        String   @db.VarChar(255)
+  start_time     DateTime @db.Time(0)
+  end_time       DateTime @db.Time(0)
+  location       String?  @db.VarChar(255)
+  meeting_link   String?  @db.VarChar(255)
+  meeting_status Boolean?
+  patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
+  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
+
+  @@index([p_id], map: "p_id")
+  @@index([s_id], map: "s_id")
 }
