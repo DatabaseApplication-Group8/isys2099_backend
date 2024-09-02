@@ -16,9 +16,15 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll(@Query('name') name: string) {
-    return this.userService.findAll(name);
+  // @Get()
+  // findAll(@Query('name') name: string) {
+  //   return this.userService.findAll(name);
+  // }
+
+  @Public()
+  @Get('/staff')
+  findAllStaff() {
+    return this.userService.findAllStaff();
   }
 
   // @Get(':name')

@@ -12,23 +12,28 @@ export class TreatmentController {
     return this.treatmentService.create(createTreatmentDto);
   }
 
-  @Get()
-  findAll() {
-    return this.treatmentService.findAll();
-  }
-
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.treatmentService.findOne(+id);
+  findByUserId(@Param('id') id: string) {
+    return this.treatmentService.findByUserId(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTreatmentDto: UpdateTreatmentDto) {
-    return this.treatmentService.update(+id, updateTreatmentDto);
-  }
+  // @Get()
+  // findAll() {
+  //   return this.treatmentService.findAll();
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.treatmentService.remove(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.treatmentService.findOne(+id);
+  // }
+
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateTreatmentDto: UpdateTreatmentDto) {
+  //   return this.treatmentService.update(+id, updateTreatmentDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.treatmentService.remove(+id);
+  // }
 }

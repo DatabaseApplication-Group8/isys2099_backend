@@ -19,6 +19,16 @@ export class TreatmentService {
     };
   }
 
+  async findByUserId(id: number){
+    const treatments = await this.prisma.treatments.findMany({
+      where: {
+        p_id: id
+      }
+    })
+    return treatments;
+  }
+
+
   findAll() {
     return `This action returns all treatment`;
   }
