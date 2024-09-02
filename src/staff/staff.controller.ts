@@ -50,14 +50,10 @@ export class StaffController {
   }
 
 
-@Get()
-viewStaffSchedule(@Param('id') id: number) {
-  return this.staffService.viewStaffSchedule(id);
-}
-
-
-
-
+  @Get('schedule/:id')
+  viewStaffSchedule(@Param('id') id: number) { 
+    return this.staffService.viewStaffSchedule(+id);
+  }
   
   // @Post()
   // create(@Body() createStaffDto: CreateStaffDto) {

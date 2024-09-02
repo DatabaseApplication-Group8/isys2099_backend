@@ -184,7 +184,15 @@ export class StaffService {
 
     }
     catch (error) {
-      throw new Error("Failed to view staff schedule");
+      console.error("Failed to add new staff member: ", error);
+      // Optionally, log specific error details if Prisma throws known error types
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        console.error("Error details:", {
+          code: error.code,
+          meta: error.meta
+        });
+      }
+      throw new Error("Failed to add new staff member: " + error.message);
     }
   }
 
