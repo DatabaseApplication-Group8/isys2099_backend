@@ -14,7 +14,7 @@ export class StaffController {
 
   // Use Case
   // done
-  @Post()
+  @Post("add-new-staff")
   addNewStaff(@Body() CreateStaffDto : CreateStaffDto) {
       return this.staffService.addNewStaff(CreateStaffDto);
   }
