@@ -13,14 +13,22 @@ import { CreatePatientDto } from 'src/patient/dto/create-patient.dto';
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private patientService : PatientService
+    private patientService: PatientService,
   ) {}
-
 
   isEmailExist = async (email: string) => {
     const user = await this.prisma.users.findUnique({
       where: {
         email,
+      },
+    });
+    if (user) return true;
+    return false;
+  };
+  isUsernameExist = async (username: string) => {
+    const user = await this.prisma.users.findUnique({
+      where: {
+        username,
       },
     });
     if (user) return true;
@@ -51,12 +59,19 @@ export class UserService {
     const isExist = await this.isEmailExist(email);
     if (isExist) {
       throw new BadRequestException(
-        `This ${email} email is exist. PLease enter different email`,
+        `This ${email} email is exist. Please enter different email`,
+      );
+    }
+
+    const isUsernameExist = await this.isUsernameExist(username);
+    if (isUsernameExist) {
+      throw new BadRequestException(
+        `This ${username} username is exist. Please enter different username`,
       );
     }
 
     const hashPassword = await hashPasswordHelper(pw);
-   
+
     const user = await this.prisma.users.create({
       data: {
         username,
@@ -75,9 +90,9 @@ export class UserService {
     const newPatient: CreatePatientDto = {
       p_id: user.id,
       address: createUserDto.address,
-      allergies: createUserDto.allergies
+      allergies: createUserDto.allergies,
     };
-    if(createUserDto.roles === 3){
+    if (createUserDto.roles === 3) {
       await this.patientService.create(newPatient);
     }
     return {
@@ -93,38 +108,50 @@ export class UserService {
     });
   }
 
-  async findAll(name?: string) {
-    const id = !isNaN(Number(name)) ? Number(name) : undefined;
-    const data = await this.prisma.users.findMany({
+  // async findAll(name?: string) {
+  //   const id = !isNaN(Number(name)) ? Number(name) : undefined;
+  //   const data = await this.prisma.users.findMany({
+  //     where: {
+  //       OR: [
+  //         { id: id },
+  //         {
+  //           Fname: {
+  //             contains: name,
+  //           },
+  //         },
+  //         {
+  //           Lname: {
+  //             contains: name,
+  //           },
+  //         },
+  //       ],
+  //     },
+  //     select: {
+  //       id: true,
+  //       username: true,
+  //       Fname: true,
+  //       Minit: true,
+  //       Lname: true,
+  //       phone: true,
+  //       email: true,
+  //       sex: true,
+  //       birth_date: true,
+  //     },
+  //   });
+
+  //   return { data: data, status: 200, total: data.length };
+  // }
+
+  async findAllStaff() {
+    return await this.prisma.users.findMany({
       where: {
-        OR: [
-          { id: id },
-          {
-            Fname: {
-              contains: name,
-            },
-          },
-          {
-            Lname: {
-              contains: name,
-            },
-          },
-        ],
+        role: 2,
       },
       select: {
         id: true,
-        username: true,
         Fname: true,
-        Minit: true,
-        Lname: true,
-        phone: true,
-        email: true,
-        sex: true,
-        birth_date: true,
       },
-    });
-
-    return { data: data, status: 200, total: data.length };
+    });;
   }
 
   // async findOneByName(name: string) {
