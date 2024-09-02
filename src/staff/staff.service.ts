@@ -3,7 +3,7 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
-import { Prisma, schedules, staff } from '@prisma/client';
+import { appointments, Prisma, schedules, staff } from '@prisma/client';
 
 
 // repo
@@ -200,68 +200,42 @@ export class StaffService {
   async updateStaffSchedule(s_id: number, newSchedules: schedules): Promise<void> {
     try {
 
-      //check clash schedule
-
-      const existingSchedule = await this.prisma.staff.findUnique({
-        where: {
-          s_id: s_id
-        },
-        select:{
-          schedules: true
-        }
-      })
-      
-      if (!existingSchedule || !existingSchedule.schedules) {
-        throw new Error("No schedule found")
-      }
-
-      const existingPatientAppointment = await this.prisma.staff.findUnique({
-        where :{
+      // check if the staff exist or not
+      const staffSchedule =  await this.prisma.staff.findUnique({
+        where:{
           s_id : s_id
         },
         select:{
-          appointments: true
+          schedules: true,
         }
       })
-
-      if (!existingPatientAppointment || !existingPatientAppointment.appointments){
-        throw new Error("No appointment found")
+      
+      // if staff does not exist
+      if (!staffSchedule){
+        throw new Error("Staff does not exist")
       }
 
-      // check if clash with existing staff's schedule
-      existingSchedule.schedules.forEach(element => {
-        if (element.start_time === newSchedules.start_time 
-          || element.end_time === newSchedules.end_time 
-          || element.start_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.start_time < newSchedules.end_time
-          || element.end_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.end_time > newSchedules.end_time) {
-          throw new Error("Clash schedule")
-        }
-      });
-      
-      // check if clash with existing patient's appointment
-      existingSchedule.schedules.forEach(element => {
-        if (element.start_time === newSchedules.start_time 
-          || element.end_time === newSchedules.end_time 
-          || element.start_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.start_time < newSchedules.end_time
-          || element.end_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.end_time > newSchedules.end_time) {
-          throw new Error("Clash schedule")
-        }
+        // Check for clashes in existing schedules
+        staffSchedule.schedules.forEach(element => {
+          if (
+              (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
+              (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
+              (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
+          ) {
+              throw new Error("Schedule clash detected with existing schedules");
+          }
       });
 
-      await this.prisma.staff.update({
-        where: {
-          s_id: s_id,
-        },
-        data: {
-          schedules: {
-            set: [newSchedules]
-          }
-        }
-      })
+    await this.prisma.schedules.upsert({
+      where :{
+        scheduled_id : newSchedules.scheduled_id ?? -1
+      },
+      update: newSchedules,
+      create:{
+        ...newSchedules,
+        s_id: s_id
+      }
+    })
 
     } catch (error) {
       console.error("Failed to update staff schedule: ", error);

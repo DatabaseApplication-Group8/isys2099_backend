@@ -44,7 +44,7 @@ export class StaffController {
     return this.staffService.updateStaffInfo(+id, updateStaffDto);
   }
 
-  @Patch(':id')
+  @Patch('update-schedule/:id')
   updateStaffSchedule(@Param('id') id: string, @Body() schedules: schedules) {
     return this.staffService.updateStaffSchedule(+id, schedules);
   }
