@@ -3,7 +3,7 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
-import { Prisma, schedules, staff } from '@prisma/client';
+import { appointments, Prisma, schedules, staff } from '@prisma/client';
 
 
 // repo
@@ -47,22 +47,6 @@ export class StaffService {
   }
 
   // add new staff
-  // async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
-  //   try {
-  //     await this.prisma.staff.create({
-  //       data: {
-  //         s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
-  //         salary: createStaffDto.salary,
-  //         dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
-  //         job_id: typeof createStaffDto.job_id == 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
-  //         manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
-  //         qualifications: createStaffDto.qualifications
-  //       }
-  //     });
-  //   } catch (error) {
-  //     throw new Error("Failed to add new staff member");
-  //   }
-  // }
   async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
     try {
 
@@ -120,34 +104,40 @@ export class StaffService {
   }
 
   // listStaffByName
-  async listStaffByName(order: 'asc' | 'desc'): Promise<void> {
+  async listStaffByName(order: 'asc' | 'desc'): Promise<staff[]> {
     try {
-      const data = await this.prisma.staff.findMany({
-        orderBy: {
-          users: {
-            Fname: order
-          }
-        }
-      })
+        const data = await this.prisma.staff.findMany({
+            include: {
+                users: true  // Make sure to include users to access the Fname field
+            },
+            orderBy: {
+                users: {
+                    Fname: order  // Ensure this is supported by your Prisma Client version
+                }
+            }
+        });
+        return data;  // Return the fetched data
     } catch (error) {
-      throw new Error("Failed to list staff by name");
+        console.error("Failed to list staff by name: ", error);
+        throw new Error("Failed to list staff by name: " + error.message);
     }
-  }
+}
 
   // List Staff By department
-  async listStaffByDepartment(dept_id: number): Promise<void> {
+  async listStaffByDepartment(dept_id: number): Promise<staff[]> {
     try {
       const data = await this.prisma.staff.findMany({
         where: {
           dept_id: dept_id,
         }
-      })
+      });
+      return data;
     } catch (error) {
       throw new Error("Failed to list staff by department");
     }
   }
 
-
+  // ???
   // update staff Info
   async updateStaffInfo(s_id: number, UpdateStaffDto: UpdateStaffDto): Promise<void> {
     try {
@@ -184,7 +174,15 @@ export class StaffService {
 
     }
     catch (error) {
-      throw new Error("Failed to view staff schedule");
+      console.error("Failed to add new staff member: ", error);
+      // Optionally, log specific error details if Prisma throws known error types
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        console.error("Error details:", {
+          code: error.code,
+          meta: error.meta
+        });
+      }
+      throw new Error("Failed to add new staff member: " + error.message);
     }
   }
 
@@ -192,68 +190,42 @@ export class StaffService {
   async updateStaffSchedule(s_id: number, newSchedules: schedules): Promise<void> {
     try {
 
-      //check clash schedule
-
-      const existingSchedule = await this.prisma.staff.findUnique({
-        where: {
-          s_id: s_id
-        },
-        select:{
-          schedules: true
-        }
-      })
-      
-      if (!existingSchedule || !existingSchedule.schedules) {
-        throw new Error("No schedule found")
-      }
-
-      const existingPatientAppointment = await this.prisma.staff.findUnique({
-        where :{
+      // check if the staff exist or not
+      const staffSchedule =  await this.prisma.staff.findUnique({
+        where:{
           s_id : s_id
         },
         select:{
-          appointments: true
+          schedules: true,
         }
       })
-
-      if (!existingPatientAppointment || !existingPatientAppointment.appointments){
-        throw new Error("No appointment found")
+      
+      // if staff does not exist
+      if (!staffSchedule){
+        throw new Error("Staff does not exist")
       }
 
-      // check if clash with existing staff's schedule
-      existingSchedule.schedules.forEach(element => {
-        if (element.start_time === newSchedules.start_time 
-          || element.end_time === newSchedules.end_time 
-          || element.start_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.start_time < newSchedules.end_time
-          || element.end_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.end_time > newSchedules.end_time) {
-          throw new Error("Clash schedule")
-        }
-      });
-      
-      // check if clash with existing patient's appointment
-      existingSchedule.schedules.forEach(element => {
-        if (element.start_time === newSchedules.start_time 
-          || element.end_time === newSchedules.end_time 
-          || element.start_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.start_time < newSchedules.end_time
-          || element.end_time > newSchedules.start_time && element.end_time < newSchedules.end_time
-          || element.start_time > newSchedules.start_time && element.end_time > newSchedules.end_time) {
-          throw new Error("Clash schedule")
-        }
+        // Check for clashes in existing schedules
+        staffSchedule.schedules.forEach(element => {
+          if (
+              (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
+              (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
+              (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
+          ) {
+              throw new Error("Schedule clash detected with existing schedules");
+          }
       });
 
-      await this.prisma.staff.update({
-        where: {
-          s_id: s_id,
-        },
-        data: {
-          schedules: {
-            set: [newSchedules]
-          }
-        }
-      })
+    await this.prisma.schedules.upsert({
+      where :{
+        scheduled_id : newSchedules.scheduled_id ?? -1
+      },
+      update: newSchedules,
+      create:{
+        ...newSchedules,
+        s_id: s_id
+      }
+    })
 
     } catch (error) {
       console.error("Failed to update staff schedule: ", error);
