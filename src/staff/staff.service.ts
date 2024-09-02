@@ -47,22 +47,6 @@ export class StaffService {
   }
 
   // add new staff
-  // async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
-  //   try {
-  //     await this.prisma.staff.create({
-  //       data: {
-  //         s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
-  //         salary: createStaffDto.salary,
-  //         dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
-  //         job_id: typeof createStaffDto.job_id == 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
-  //         manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
-  //         qualifications: createStaffDto.qualifications
-  //       }
-  //     });
-  //   } catch (error) {
-  //     throw new Error("Failed to add new staff member");
-  //   }
-  // }
   async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
     try {
 
@@ -120,34 +104,40 @@ export class StaffService {
   }
 
   // listStaffByName
-  async listStaffByName(order: 'asc' | 'desc'): Promise<void> {
+  async listStaffByName(order: 'asc' | 'desc'): Promise<staff[]> {
     try {
-      const data = await this.prisma.staff.findMany({
-        orderBy: {
-          users: {
-            Fname: order
-          }
-        }
-      })
+        const data = await this.prisma.staff.findMany({
+            include: {
+                users: true  // Make sure to include users to access the Fname field
+            },
+            orderBy: {
+                users: {
+                    Fname: order  // Ensure this is supported by your Prisma Client version
+                }
+            }
+        });
+        return data;  // Return the fetched data
     } catch (error) {
-      throw new Error("Failed to list staff by name");
+        console.error("Failed to list staff by name: ", error);
+        throw new Error("Failed to list staff by name: " + error.message);
     }
-  }
+}
 
   // List Staff By department
-  async listStaffByDepartment(dept_id: number): Promise<void> {
+  async listStaffByDepartment(dept_id: number): Promise<staff[]> {
     try {
       const data = await this.prisma.staff.findMany({
         where: {
           dept_id: dept_id,
         }
-      })
+      });
+      return data;
     } catch (error) {
       throw new Error("Failed to list staff by department");
     }
   }
 
-
+  // ???
   // update staff Info
   async updateStaffInfo(s_id: number, UpdateStaffDto: UpdateStaffDto): Promise<void> {
     try {

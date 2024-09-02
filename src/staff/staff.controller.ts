@@ -13,43 +13,43 @@ export class StaffController {
   constructor(private readonly staffService: StaffService) {}
 
   // Use Case
-
+  // done
   @Post()
   addNewStaff(@Body() CreateStaffDto : CreateStaffDto) {
       return this.staffService.addNewStaff(CreateStaffDto);
   }
-
+// done
   @Get()
   findAll() {
     return this.staffService.findAll();
   }
-
+  // done 
   @Get(':number')
   findOneBySalary(@Param('number') number: number) {
     return this.staffService.findOneBySalary(number);
   }
 
-  @Get()
-  listStaffByName(@Param('string') order : string) {
-    return this.staffService.listStaffByName("asc");
+  @Get('list-staff-by-name/:order')
+  listStaffByName(@Param('string') order : 'asc' | 'desc') {
+    return this.staffService.listStaffByName(order);
   }
 
-  @Get()
-  listStaffByDepartment(@Param('string') s_id: number) {
-    return this.staffService.listStaffByDepartment(s_id);
+  @Get('list-staff-by-department/:dept_id')
+  listStaffByDepartment(@Param('number') dept_id: number) {
+    return this.staffService.listStaffByDepartment(dept_id);
   }
 
-  @Patch(':id')
+  @Patch('update-staff-info/:id')
   updateStaffInfo(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
     return this.staffService.updateStaffInfo(+id, updateStaffDto);
   }
-
+  // done 
   @Patch('update-schedule/:id')
   updateStaffSchedule(@Param('id') id: string, @Body() schedules: schedules) {
     return this.staffService.updateStaffSchedule(+id, schedules);
   }
 
-
+  // done 
   @Get('schedule/:id')
   viewStaffSchedule(@Param('id') id: number) { 
     return this.staffService.viewStaffSchedule(+id);
