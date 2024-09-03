@@ -1,4 +1,4 @@
-import { UUID } from 'crypto';
+
 export class CreateUserDto {
   username: string;
   pw: string;
@@ -15,10 +15,10 @@ export class CreateUserDto {
   address?: string;
   allergies?: string;
   //staff
-  s_id?: UUID | number;
-  job_id?: UUID | number;
-  dept_id?: UUID | number;
-  manager_id?: UUID | number;
+  s_id?: number;
+  job_id?: number;
+  dept_id?: number;
+  manager_id?: number;
   qualifications?: string;
   salary?: number;
 }

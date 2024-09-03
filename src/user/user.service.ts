@@ -100,12 +100,15 @@ export class UserService {
     } else if (createUserDto.roles === 2) {
       const newStaff: CreateStaffDto = {
         s_id: user.id,
-        job_id: createUserDto.job_id,
+        // job_id: createUserDto.job_id,
+        job_id: null,
         dept_id: createUserDto.dept_id,
-        manager_id: createUserDto.manager_id,
+        // manager_id: createUserDto.manager_id,
+        manager_id: null,
         qualifications: createUserDto.qualifications,
         salary: createUserDto.salary,
       };
+      console.log(newStaff);
       await this.staffService.addNewStaff(newStaff);
     }
     return {
