@@ -10,9 +10,10 @@ import { UserModule } from './user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
 import { TreatmentModule } from './treatment/treatment.module';
+import { DepartmentModule } from './department/department.module';
 
 @Module({
-  imports: [StaffModule, PatientModule, AppointmentModule, AuthModule, ReportModule, UserModule, TreatmentModule],
+  imports: [StaffModule, PatientModule, AppointmentModule, AuthModule, ReportModule, UserModule, TreatmentModule, DepartmentModule],
   controllers: [AppController],
   providers: [AppService,
     {

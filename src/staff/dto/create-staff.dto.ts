@@ -1,10 +1,9 @@
-import { UUID } from "crypto";
 
 export class CreateStaffDto {
-    s_id : UUID | number;
-    job_id : UUID | number;
-    dept_id : UUID | number;
-    manager_id : UUID | number;
+    s_id : number;
+    job_id : number;
+    dept_id : number;
+    manager_id : number;
     qualifications : string;
     salary : number;
 }
