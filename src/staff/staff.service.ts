@@ -215,6 +215,7 @@ export class StaffService {
         },
         select: {
           schedules: true,
+          appointments: true
         }
       })
 
@@ -224,16 +225,25 @@ export class StaffService {
       }
 
       // Check for clashes in existing schedules
-      staffSchedule.schedules.forEach(element => {
-        if (
-          (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
-          (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
-          (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
-        ) {
-          throw new Error("Schedule clash detected with existing schedules");
-        }
-      });
-
+      // staffSchedule.schedules.forEach(element => {
+      //   if (
+      //     (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
+      //     (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
+      //     (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
+      //   ) {
+      //     throw new Error("Schedule clash detected with existing schedules");
+      //   }
+      // });
+      const combinedEvents = [...staffSchedule.schedules, ...(staffSchedule.appointments || [])];
+        combinedEvents.forEach(element => {
+            if (
+                (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
+                (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
+                (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
+            ) {
+                throw new Error("Schedule clash detected with existing schedules/appointments");
+            }
+        });
       await this.prisma.schedules.upsert({
         where: {
           scheduled_id: newSchedules.scheduled_id ?? -1
