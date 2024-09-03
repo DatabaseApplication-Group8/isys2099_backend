@@ -8,12 +8,15 @@ import { hashPasswordHelper } from 'src/helpers/util';
 import aqp from 'api-query-params';
 import { PatientService } from 'src/patient/patient.service';
 import { CreatePatientDto } from 'src/patient/dto/create-patient.dto';
+import { StaffService } from 'src/staff/staff.service';
+import { CreateStaffDto } from 'src/staff/dto/create-staff.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private patientService: PatientService,
+    private staffService: StaffService,
   ) {}
 
   isEmailExist = async (email: string) => {
@@ -87,13 +90,23 @@ export class UserService {
       },
     });
 
-    const newPatient: CreatePatientDto = {
-      p_id: user.id,
-      address: createUserDto.address,
-      allergies: createUserDto.allergies,
-    };
     if (createUserDto.roles === 3) {
+      const newPatient: CreatePatientDto = {
+        p_id: user.id,
+        address: createUserDto.address,
+        allergies: createUserDto.allergies,
+      };
       await this.patientService.create(newPatient);
+    } else if (createUserDto.roles === 2) {
+      const newStaff: CreateStaffDto = {
+        s_id: user.id,
+        job_id: createUserDto.job_id,
+        dept_id: createUserDto.dept_id,
+        manager_id: createUserDto.manager_id,
+        qualifications: createUserDto.qualifications,
+        salary: createUserDto.salary,
+      };
+      await this.staffService.addNewStaff(newStaff);
     }
     return {
       id: user.id,
@@ -151,7 +164,7 @@ export class UserService {
         id: true,
         Fname: true,
       },
-    });;
+    });
   }
 
   // async findOneByName(name: string) {
