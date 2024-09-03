@@ -3,5 +3,4 @@ import { CreateAppointmentDto } from './create-appointment.dto';
 
 export class UpdateAppointmentDto {
     id: number
-    status: boolean
 }

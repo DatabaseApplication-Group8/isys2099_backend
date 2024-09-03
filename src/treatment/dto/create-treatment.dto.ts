@@ -3,4 +3,6 @@ export class CreateTreatmentDto {
   doctor_id: number;
   description: string;
   treatment_date: Date | string | null;
+  start_time: Date | string;
+  end_time: Date | string;
 }

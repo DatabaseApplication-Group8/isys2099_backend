@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTreatmentDto } from './dto/create-treatment.dto';
 import { UpdateTreatmentDto } from './dto/update-treatment.dto';
 import { PrismaService } from 'prisma/prisma.service';
@@ -7,10 +7,12 @@ import { PrismaService } from 'prisma/prisma.service';
 export class TreatmentService {
   constructor(private prisma: PrismaService) {}
   async create(createTreatmentDto: CreateTreatmentDto) {
-    createTreatmentDto.treatment_date = new Date(createTreatmentDto.treatment_date)
+    createTreatmentDto.treatment_date = new Date(
+      createTreatmentDto.treatment_date,
+    );
     const newTreatment = await this.prisma.treatments.create({
-      data: createTreatmentDto
-    })
+      data: createTreatmentDto,
+    });
 
     return {
       data: newTreatment,
@@ -19,29 +21,59 @@ export class TreatmentService {
     };
   }
 
-  async findByUserId(id: number){
+  async findByUserId(id: number) {
     const treatments = await this.prisma.treatments.findMany({
       where: {
-        p_id: id
-      }
-    })
+        p_id: id,
+      },
+    });
     return treatments;
   }
 
-
-  findAll() {
-    return `This action returns all treatment`;
+  async findByPatientId(id: number) {
+    const isExist = await this.prisma.patients.findUnique({
+      where: {
+        p_id: id,
+      },
+    });
+    if (isExist) {
+      return await this.prisma.treatments.findMany({
+        where: {
+          p_id: id,
+        },
+        select: {
+          t_id: true,
+          p_id: true,
+          doctor_id: true,
+          description: true,
+          treatment_date: true,
+          start_time: true,
+          end_time: true,
+          staff: {
+            select: {
+              users: true,
+            },
+          },
+        },
+      });
+    } else {
+      throw new BadRequestException('Invalid Patient ID');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} treatment`;
-  }
+  // findAll() {
+  //   return `This action returns all treatment`;
+  // }
 
-  update(id: number, updateTreatmentDto: UpdateTreatmentDto) {
-    return `This action updates a #${id} treatment`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} treatment`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} treatment`;
-  }
+  // update(id: number, updateTreatmentDto: UpdateTreatmentDto) {
+  //   return `This action updates a #${id} treatment`;
+  // }
+
+  // remove(id: number) {
+  //   return `This action removes a #${id} treatment`;
+  // }
 }

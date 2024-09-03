@@ -4,7 +4,6 @@ export class CreateAppointmentDto {
   start_time: Date | string;
   end_time: Date | string;
   location?: string | null;
-  meeting_link?: string | null;
   meeting_status?: boolean | null;
   p_id: number;
   s_id: number;

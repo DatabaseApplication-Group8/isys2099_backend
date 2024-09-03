@@ -110,6 +110,8 @@ model treatments {
   doctor_id      Int
   description    String    @db.VarChar(255)
   treatment_date DateTime  @db.DateTime(0)
+  start_time     DateTime  @db.Time(0)
+  end_time       DateTime  @db.Time(0)
   reports        reports[]
   patients       patients  @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "treatments_ibfk_1")
   staff          staff     @relation(fields: [doctor_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "treatments_ibfk_2")
@@ -146,7 +148,6 @@ model appointments {
   start_time     DateTime @db.Time(0)
   end_time       DateTime @db.Time(0)
   location       String?  @db.VarChar(255)
-  meeting_link   String?  @db.VarChar(255)
   meeting_status Boolean?
   patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
   staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
