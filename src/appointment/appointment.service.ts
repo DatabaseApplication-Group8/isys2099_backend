@@ -1,13 +1,14 @@
 import { PrismaService } from './../../prisma/prisma.service';
 import {
   BadRequestException,
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, appointments } from '@prisma/client';
 
 @Injectable()
 export class AppointmentService {
@@ -54,9 +55,8 @@ export class AppointmentService {
         appointment.s_id === createAppointmentDto.s_id &&
         appointment.p_id === createAppointmentDto.p_id
       ) {
-        throw new HttpException(
+        throw new ConflictException(
           `You already have another appointment with this staff on ${meeting_date} from ${startTime} to ${endTime}.`,
-          HttpStatus.CONFLICT,
         );
       }
       // Check if the new appointment's time overlaps with any existing appointment
@@ -65,9 +65,8 @@ export class AppointmentService {
         (endTime > existStartTime && endTime <= existEndTime) || // Ends during an existing appointment
         (startTime <= existStartTime && endTime >= existEndTime) // Completely overlaps an existing appointment
       ) {
-        throw new HttpException(
-          'Appointment clash detected. Please choose a different time slot.',
-          HttpStatus.CONFLICT,
+        throw new ConflictException(
+          `Appointment clash detected. Please choose a different time slot.`,
         );
       }
     }
@@ -97,14 +96,12 @@ export class AppointmentService {
         (endTime > existStartTime && endTime <= existEndTime) ||
         (startTime <= existStartTime && endTime >= existEndTime)
       ) {
-        throw new HttpException(
+        throw new ConflictException(
           'Schedule clash detected. Please choose a different time slot.',
-          HttpStatus.CONFLICT,
         );
       }
     }
     // Check Treatment clash
-
 
     // Convert date, start time, end time to Date format
     createAppointmentDto.meeting_date = new Date(
@@ -118,6 +115,25 @@ export class AppointmentService {
     );
     const appointment = await this.prismaService.appointments.create({
       data: createAppointmentDto,
+      select: {
+        meeting_date: true,
+        purpose: true,
+        start_time: true,
+        end_time: true,
+        location: true,
+        meeting_status: true,
+        p_id: true,
+        s_id: true,
+        staff: {
+          select: {
+            users: {
+              select: {
+                Fname: true
+              }
+            }
+          }
+        }
+      },
     });
 
     return {
@@ -152,6 +168,60 @@ export class AppointmentService {
       throw new BadRequestException('Invalid User ID');
     }
   }
+
+  async findByPatientId(id: number) {
+    const isExist = await this.prismaService.patients.findUnique({
+      where: {
+        p_id: id,
+      },
+    });
+    if (isExist) {
+      return await this.prismaService.appointments.findMany({
+        where: {
+          p_id: id,
+        },
+        select: {
+          appointment_id: true,
+          meeting_date: true,
+          p_id: true,
+          s_id: true,
+          purpose: true,
+          start_time: true,
+          end_time: true,
+          location: true,
+          meeting_status: true,
+          staff: {
+            select: {
+              users: true,
+            },
+          },
+        },
+      });
+    } else {
+      throw new BadRequestException('Invalid Patient ID');
+    }
+  }
+
+  // data = await this.prisma.patients.findMany({
+  //   where: whereClause, // Apply search conditions only if `name` is provided
+  //   select: {
+  //     p_id: true, // Select specific fields from patients
+  //     users: {
+  //       select: {
+  //         id: true,
+  //         username: true,
+  //         Fname: true,
+  //         Minit: true,
+  //         Lname: true,
+  //         phone: true,
+  //         email: true,
+  //         sex: true,
+  //         birth_date: true,
+  //         pw: false, // Ensure that pw is not selected
+  //       },
+  //     },
+  //   },
+  // });
 
   async findByStaffId(id: number) {
     const isExist = await this.prismaService.staff.findUnique({
