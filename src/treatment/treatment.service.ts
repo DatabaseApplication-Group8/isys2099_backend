@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateTreatmentDto } from './dto/create-treatment.dto';
 import { UpdateTreatmentDto } from './dto/update-treatment.dto';
 import { PrismaService } from 'prisma/prisma.service';
@@ -10,8 +14,145 @@ export class TreatmentService {
     createTreatmentDto.treatment_date = new Date(
       createTreatmentDto.treatment_date,
     );
+    const startTime: string = new Date(createTreatmentDto.start_time)
+      .toISOString()
+      .split('T')[1]
+      .split('.')[0];
+    const endTime: string = new Date(createTreatmentDto.end_time)
+      .toISOString()
+      .split('T')[1]
+      .split('.')[0];
+
+    // Check treatment clash
+    try {
+      var treatmentList = await this.prisma.treatments.findMany({
+        where: {
+          treatment_date: new Date(createTreatmentDto.treatment_date),
+          doctor_id: createTreatmentDto.doctor_id,
+        },
+      });
+    } catch (error) {
+      throw new Error('Appointment fetch data error');
+    }
+
+    for (let treatment of treatmentList) {
+      const existStartTime: String = new Date(treatment.start_time)
+        .toISOString()
+        .split('T')[1]
+        .split('.')[0];
+      const existEndTime: String = new Date(treatment.end_time)
+        .toISOString()
+        .split('T')[1]
+        .split('.')[0];
+      
+      if (
+        treatment.doctor_id === createTreatmentDto.doctor_id &&
+        treatment.p_id === createTreatmentDto.p_id
+      ) {
+        throw new ConflictException(
+          `You already have another treatment with this Doctor on ${createTreatmentDto.treatment_date.toISOString().slice(0, 10)} from ${existStartTime} to ${existEndTime}.`,
+        );
+      }
+      
+      if (
+        (startTime >= existStartTime && startTime < existEndTime) || // Starts during an existing appointment
+        (endTime > existStartTime && endTime <= existEndTime) || // Ends during an existing appointment
+        (startTime <= existStartTime && endTime >= existEndTime) // Completely overlaps an existing appointment
+      ) {
+        throw new ConflictException(
+          `Treatment clash detected from ${startTime} to ${endTime}. This staff already have
+           another treatment from ${existStartTime} to ${existEndTime} on ${createTreatmentDto.treatment_date.toISOString().slice(0, 10)}. 
+           Please choose different time slot`,
+        );
+      }
+    }
+
+    // Check schedule clash
+    try {
+      var scheduleList = await this.prisma.schedules.findMany({
+        where: {
+          scheduled_date: new Date(createTreatmentDto.treatment_date),
+          s_id: createTreatmentDto.doctor_id,
+        },
+      });
+    } catch (error) {
+      throw new Error('Treatment fetch data error');
+    }
+    for (let schedule of scheduleList) {
+      const existStartTime: String = new Date(schedule.start_time)
+        .toISOString()
+        .split('T')[1]
+        .split('.')[0];
+      const existEndTime: String = new Date(schedule.end_time)
+        .toISOString()
+        .split('T')[1]
+        .split('.')[0];
+      if (
+        (startTime >= existStartTime && startTime < existEndTime) ||
+        (endTime > existStartTime && endTime <= existEndTime) ||
+        (startTime <= existStartTime && endTime >= existEndTime)
+      ) {
+        throw new ConflictException(
+          `Schedule clash detected from ${startTime} to ${endTime}. This staff already have
+           schedule from ${existStartTime} to ${existEndTime} on ${createTreatmentDto.treatment_date.toISOString().slice(0, 10)}. Please choose different time slot`,
+        );
+      }
+    }
+
+    // Check appointment clash
+    try {
+      var appointmentList = await this.prisma.appointments.findMany({
+        where: {
+          meeting_date: new Date(createTreatmentDto.treatment_date),
+          s_id: createTreatmentDto.doctor_id,
+        },
+      });
+    } catch (error) {
+      throw new Error('Treatment fetch data error');
+    }
+    for (let appointment of appointmentList) {
+      if (appointment.meeting_status === true) {
+        const existStartTime: String = new Date(appointment.start_time)
+          .toISOString()
+          .split('T')[1]
+          .split('.')[0];
+        const existEndTime: String = new Date(appointment.end_time)
+          .toISOString()
+          .split('T')[1]
+          .split('.')[0];
+        if (
+          (startTime >= existStartTime && startTime < existEndTime) ||
+          (endTime > existStartTime && endTime <= existEndTime) ||
+          (startTime <= existStartTime && endTime >= existEndTime)
+        ) {
+          throw new ConflictException(
+            `Appointment clash detected from ${startTime} to ${endTime}. This staff already have
+           another appointment from ${existStartTime} to ${existEndTime} on ${createTreatmentDto.treatment_date.toISOString().slice(0, 10)}. Please choose different time slot`,
+          );
+        }
+      }
+    }
+
     const newTreatment = await this.prisma.treatments.create({
       data: createTreatmentDto,
+      select: {
+        t_id: true,
+        p_id: true,
+        doctor_id: true,
+        description: true,
+        treatment_date: true,
+        start_time: true,
+        end_time: true,
+        staff: {
+          select: {
+            users: {
+              select: {
+                Fname: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     return {
