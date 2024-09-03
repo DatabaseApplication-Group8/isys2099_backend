@@ -7,6 +7,7 @@ import { PrismaService } from 'prisma/prisma.service';
 export class PatientService {
   constructor(private prisma: PrismaService) {}
   async create(createPatientDto: CreatePatientDto) {
+    
     const newPatient = await this.prisma.patients.create({
       data: createPatientDto,
     });
