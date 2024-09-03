@@ -42,32 +42,34 @@ export class AppointmentService {
     }
 
     for (let appointment of appointmentList) {
-      const existStartTime: String = new Date(appointment.start_time)
-        .toISOString()
-        .split('T')[1]
-        .split('.')[0];
-      const existEndTime: String = new Date(appointment.end_time)
-        .toISOString()
-        .split('T')[1]
-        .split('.')[0];
-      // Check if the user have another appointment with the staff on the same day
-      if (
-        appointment.s_id === createAppointmentDto.s_id &&
-        appointment.p_id === createAppointmentDto.p_id
-      ) {
-        throw new ConflictException(
-          `You already have another appointment with this staff on ${meeting_date} from ${startTime} to ${endTime}.`,
-        );
-      }
-      // Check if the new appointment's time overlaps with any existing appointment
-      if (
-        (startTime >= existStartTime && startTime < existEndTime) || // Starts during an existing appointment
-        (endTime > existStartTime && endTime <= existEndTime) || // Ends during an existing appointment
-        (startTime <= existStartTime && endTime >= existEndTime) // Completely overlaps an existing appointment
-      ) {
-        throw new ConflictException(
-          `Appointment clash detected. Please choose a different time slot.`,
-        );
+      if (appointment.meeting_status === true) {
+        const existStartTime: String = new Date(appointment.start_time)
+          .toISOString()
+          .split('T')[1]
+          .split('.')[0];
+        const existEndTime: String = new Date(appointment.end_time)
+          .toISOString()
+          .split('T')[1]
+          .split('.')[0];
+        // Check if the user have another appointment with the staff on the same day
+        if (
+          appointment.s_id === createAppointmentDto.s_id &&
+          appointment.p_id === createAppointmentDto.p_id
+        ) {
+          throw new ConflictException(
+            `You already have another appointment with this staff on ${meeting_date} from ${existStartTime} to ${existEndTime}.`,
+          );
+        }
+        // Check if the new appointment's time overlaps with any existing appointment
+        if (
+          (startTime >= existStartTime && startTime < existEndTime) || // Starts during an existing appointment
+          (endTime > existStartTime && endTime <= existEndTime) || // Ends during an existing appointment
+          (startTime <= existStartTime && endTime >= existEndTime) // Completely overlaps an existing appointment
+        ) {
+          throw new ConflictException(
+            `Appointment clash detected. Please choose a different time slot.`,
+          );
+        }
       }
     }
 
@@ -97,11 +99,46 @@ export class AppointmentService {
         (startTime <= existStartTime && endTime >= existEndTime)
       ) {
         throw new ConflictException(
-          'Schedule clash detected. Please choose a different time slot.',
+          `Schedule clash detected from ${startTime} to ${endTime}. This staff already have
+           schedule from ${existStartTime} to ${existEndTime} on ${new Date(createAppointmentDto.meeting_date).toISOString().slice(0, 10)}. 
+           Please choose different time slot`,
         );
       }
     }
-    // Check Treatment clash
+    // Check treatment clash
+    try {
+      var treatmentList = await this.prismaService.treatments.findMany({
+        where: {
+          treatment_date: new Date(createAppointmentDto.meeting_date),
+          doctor_id: createAppointmentDto.s_id,
+        },
+      });
+    } catch (error) {
+      throw new Error('Appointment fetch data error');
+    }
+
+    for (let treatment of treatmentList) {
+      const existStartTime: String = new Date(treatment.start_time)
+        .toISOString()
+        .split('T')[1]
+        .split('.')[0];
+      const existEndTime: String = new Date(treatment.end_time)
+        .toISOString()
+        .split('T')[1]
+        .split('.')[0];
+      // Check if the new appointment's time overlaps with any existing appointment
+      if (
+        (startTime >= existStartTime && startTime < existEndTime) || // Starts during an existing appointment
+        (endTime > existStartTime && endTime <= existEndTime) || // Ends during an existing appointment
+        (startTime <= existStartTime && endTime >= existEndTime) // Completely overlaps an existing appointment
+      ) {
+        throw new ConflictException(
+          `Treatment clash detected from ${startTime} to ${endTime}. This staff already have
+           another treatment from ${existStartTime} to ${existEndTime} on ${new Date(createAppointmentDto.meeting_date).toISOString().slice(0, 10)}. 
+           Please choose different time slot`,
+        );
+      }
+    }
 
     // Convert date, start time, end time to Date format
     createAppointmentDto.meeting_date = new Date(
@@ -128,11 +165,11 @@ export class AppointmentService {
           select: {
             users: {
               select: {
-                Fname: true
-              }
-            }
-          }
-        }
+                Fname: true,
+              },
+            },
+          },
+        },
       },
     });
 
