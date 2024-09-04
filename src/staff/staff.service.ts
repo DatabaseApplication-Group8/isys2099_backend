@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
-import { appointments, Prisma, schedules, staff } from '@prisma/client';
+import { appointments, jobs, Prisma, schedules, staff } from '@prisma/client';
 
 
 // repo
@@ -41,7 +41,7 @@ export class StaffService {
       }
 
     } catch (err) {
-      throw Error("Unsuccess")
+      throw Error("Unsuccess" + err.message)
     }
 
   }
@@ -141,6 +141,25 @@ export class StaffService {
     }
   }
 
+  // list staff but exclude current user
+  async listStaffExludeCurrentUser(sId : number): Promise<staff[]> {
+    try {
+      const data = await this.prisma.staff.findMany({
+        include: {
+          users: true
+        },
+        where: {
+         NOT: {
+          s_id: sId
+         }
+        }
+      });
+      return data;
+    } catch (error) {
+      throw new Error("Failed to list staff excluding current user: " + error.message);
+    }
+  }
+
   // List Staff By department
   async listStaffByDepartment(dept_id: number): Promise<staff[]> {
     try {
@@ -152,6 +171,15 @@ export class StaffService {
       return data;
     } catch (error) {
       throw new Error("Failed to list staff by department");
+    }
+  }
+  
+  async listExistingJobs(): Promise<jobs[]> {
+    try {
+      const data = await this.prisma.jobs.findMany();
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
   }
 

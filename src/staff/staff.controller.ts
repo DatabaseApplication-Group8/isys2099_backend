@@ -23,6 +23,7 @@ export class StaffController {
   findAll() {
     return this.staffService.findAll();
   }
+  
   // done 
   @Get(':number')
   findOneBySalary(@Param('number') number: number) {
@@ -55,6 +56,16 @@ export class StaffController {
     return this.staffService.viewStaffSchedule(+id);
   }
   
+  @Get('list-staff-exclude-current-user/:id')
+  listStaffExludeCurrentUser(@Param('id') s_id: number) {
+    return this.staffService.listStaffExludeCurrentUser(+s_id);
+  }
+
+  @Get('list-existing-jobs')
+  listExistingJobs() {
+    return this.staffService.listExistingJobs();
+  }
+
   // @Post()
   // create(@Body() createStaffDto: CreateStaffDto) {
   //   return this.staffService.create(createStaffDto);
