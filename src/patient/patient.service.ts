@@ -66,6 +66,7 @@ export class PatientService {
             sex: true,
             birth_date: true,
             pw: false, // Ensure that pw is not selected
+            patients: true
           },
         },
       },
