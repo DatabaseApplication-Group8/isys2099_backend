@@ -170,6 +170,24 @@ export class UserService {
     });
   }
 
+  // async updateUserInfo(userId : number, updateUserDto : UpdateUserDto) : Promise<void>{
+  //   const updatedUserInfo = await this.prisma.users.update({
+  //     where: {
+  //       id: userId,
+  //     },
+  //     data: {
+  //       Lname: updateUserDto.Lname,
+  //       Fname : updateUserDto.Fname,
+  //       Minit : updateUserDto.Minit,
+  //       phone : updateUserDto.phone,
+  //       birth_date : updateUserDto.birth_date,
+  //       email : updateUserDto.email,
+  //        // address : updateUserDto.address,
+  //       if 
+  //     }
+  //   })
+  // }
+
   // async findOneByName(name: string) {
   //   const data = await this.prisma.users.findMany({
   //     where: {
