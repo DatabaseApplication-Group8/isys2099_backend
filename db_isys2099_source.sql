@@ -169,6 +169,13 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role`) REFERENCES `roles` (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+ALTER TABLE treatments
+    ADD COLUMN start_time TIME NOT NULL,
+    ADD COLUMN end_time TIME NOT NULL;
+
+ALTER TABLE appointments
+    DROP COLUMN meeting_link;
+
 INSERT INTO `roles` (`role_id`, `role_name`) VALUES
 (1, 'Admin'),
 (2, 'Staff'),
