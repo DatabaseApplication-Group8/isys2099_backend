@@ -10,7 +10,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
-  @Post()
+  @Post("create-report")
   create(@Body() createReportDto: CreateReportDto) {
     return this.reportService.create(createReportDto);
   }
