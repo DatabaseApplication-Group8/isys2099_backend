@@ -89,16 +89,17 @@ export class StaffService {
       // if (!isManagerIDExist){
       //   throw new Error(`Manager ID ${createStaffDto.manager_id} does not exist`)
       // }
-
+      
       await this.prisma.staff.create({
         data: {
           s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
+          // salary: typeof createStaffDto.salary == 'number' ? createStaffDto.salary : parseFloat(createStaffDto.salary),
           salary: createStaffDto.salary,
           dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
           // job_id: isJobIdExist ? typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id) : null,
-          job_id: 1,
+          job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
           // manager_id:  isManagerIDExist ? typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id) : null,
-          manager_id: 2,
+          manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
           qualifications: createStaffDto.qualifications,
           // users : {
           //   connect: {

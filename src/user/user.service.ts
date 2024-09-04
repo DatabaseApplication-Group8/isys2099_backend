@@ -101,10 +101,10 @@ export class UserService {
       const newStaff: CreateStaffDto = {
         s_id: user.id,
         // job_id: createUserDto.job_id,
-        job_id: null,
+        job_id: createUserDto.job_id,
         dept_id: createUserDto.dept_id,
         // manager_id: createUserDto.manager_id,
-        manager_id: null,
+        manager_id: createUserDto.manager_id,
         qualifications: createUserDto.qualifications,
         salary: createUserDto.salary,
       };
