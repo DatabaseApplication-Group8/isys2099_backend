@@ -133,9 +133,6 @@ export class TreatmentService {
       }
     }
     const billing = (): number => {
-      // let startHour: number = parseInt(startTime.slice(0,3));
-      // let endHour: number = parseInt(endTime.slice(0, 3));
-      // const totalHour = endHour - startHour;
       let startHour: number = parseInt(startTime.slice(0, 2));
       let startMinute: number = parseInt(startTime.slice(3, 5));
       let endHour: number = parseInt(endTime.slice(0, 2));
@@ -144,9 +141,10 @@ export class TreatmentService {
       const startTotalHours: number = startHour + startMinute / 60;
       const endTotalHours: number = endHour + endMinute / 60;
 
-      const totalHour = endTotalHours - startTotalHours;
+      let totalHour = endTotalHours - startTotalHours;
+      totalHour = Math.floor(totalHour)
 
-      return totalHour > 0 ? totalHour * 5 : 5;
+      return totalHour <= 1 ? 5 : totalHour * 5;
 
       
     }
