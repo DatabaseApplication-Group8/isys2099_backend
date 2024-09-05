@@ -312,4 +312,33 @@ export class StaffService {
   // remove(id: number) {
   //   return `This action removes a #${id} staff`;
   // }
+
+  async getStaffProfile(id :number){
+    const staff = await this.prisma.staff.findUnique({
+      where: {
+        s_id: id,
+      },
+      select: {
+        users: {
+          select: {
+            id: true,
+            username: true,
+            Fname: true,
+            Minit: true,
+            Lname: true,
+            phone: true,
+            email: true,
+            sex: true,
+            birth_date: true,
+            role: true,
+          },
+        },
+        jobs: true,
+        departments: true,
+        qualifications: true,
+        salary: true,
+      },
+    });
+    return staff;
+  }
 }
