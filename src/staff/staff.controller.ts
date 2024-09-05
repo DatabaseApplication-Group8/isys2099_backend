@@ -79,10 +79,10 @@ export class StaffController {
   //   return this.staffService.update(+id, updateStaffDto);
   // }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.staffService.remove(+id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.staffService.remove(+id);
+  }
 
   @Get('/profile/:id')
   getStaffProfile(@Param('id') id: string){
