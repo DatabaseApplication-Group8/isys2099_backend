@@ -7,6 +7,7 @@ import { appointments, Prisma, schedules, staff } from '@prisma/client';
 import { InjectModel } from '@nestjs/mongoose';
 import { Staff, StaffDocument } from './schemas/staff.schema';
 import { Model } from 'mongoose';
+import { CreateStaffMongoDBDto } from './dto/create-staff-mongodb.dto';
 
 
 // repo
@@ -306,4 +307,17 @@ export class StaffService {
   // remove(id: number) {
   //   return `This action removes a #${id} staff`;
   // }
+  async createStaffMongoDb(
+    createStaffMongoDBDto: CreateStaffMongoDBDto,
+    certificates: string[],
+  ) {
+    const { training_materials, other_documents } = createStaffMongoDBDto;
+
+    const staff = await this.staffModel.create({
+      certificates,
+      training_materials,
+      other_documents,
+    });
+    return staff;
+  }
 }
