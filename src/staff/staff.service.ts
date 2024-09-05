@@ -93,19 +93,11 @@ export class StaffService {
       await this.prisma.staff.create({
         data: {
           s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
-          // salary: typeof createStaffDto.salary == 'number' ? createStaffDto.salary : parseFloat(createStaffDto.salary),
           salary: createStaffDto.salary,
           dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
-          // job_id: isJobIdExist ? typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id) : null,
           job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
-          // manager_id:  isManagerIDExist ? typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id) : null,
           manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
           qualifications: createStaffDto.qualifications,
-          // users : {
-          //   connect: {
-          //     id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
-          //   }
-          // }
         }
         
       });
@@ -119,6 +111,19 @@ export class StaffService {
         });
       }
       throw new Error("Failed to add new staff member: " + error.message);
+    }
+  }
+
+  async remove(s_id: number): Promise<boolean> {
+    try {
+      await this.prisma.staff.delete({
+        where: {
+          s_id: s_id
+        }
+      })
+      return true;
+    } catch (error) {
+      throw new Error("Failed to delete staff: " + error.message);
     }
   }
 
@@ -297,21 +302,6 @@ export class StaffService {
     }
   }
 
-  // create(createStaffDto: CreateStaffDto) {
-  //   return 'This action adds a new staff';
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} staff`;
-  // }
-
-  // update(id: number, updateStaffDto: UpdateStaffDto) {
-  //   return `This action updates a #${id} staff`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} staff`;
-  // }
 
   async getStaffProfile(id :number){
     const staff = await this.prisma.staff.findUnique({
@@ -341,4 +331,6 @@ export class StaffService {
     });
     return staff;
   }
+
+
 }
