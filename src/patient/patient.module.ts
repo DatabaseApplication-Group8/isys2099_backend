@@ -2,8 +2,17 @@ import { Module } from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { PatientController } from './patient.controller';
 import { PrismaService } from 'prisma/prisma.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Patient, PatientSchema } from './schemas/patient.schema';
+import { AppointmentModule } from 'src/appointment/appointment.module';
+import { AppModule } from 'src/app.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
+  imports: [
+    MongooseModule.forFeature([{ name: Patient.name, schema: PatientSchema }]),
+  ],
   controllers: [PatientController],
   providers: [PatientService, PrismaService],
   exports: [PatientService],

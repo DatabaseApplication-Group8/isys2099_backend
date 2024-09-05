@@ -9,10 +9,17 @@ import {
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Prisma, appointments } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+import { AppointmentNote } from './schemas/appointmentNote.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AppointmentService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    @InjectModel(AppointmentNote.name)
+    private appointmentNoteModel: Model<AppointmentNote>,
+  ) {}
   async create(createAppointmentDto: CreateAppointmentDto) {
     const meeting_date = createAppointmentDto.meeting_date;
     const startTime: string = createAppointmentDto.start_time.toString();
