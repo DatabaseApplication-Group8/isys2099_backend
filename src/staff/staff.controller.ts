@@ -14,23 +14,23 @@ export class StaffController {
 
   // Use Case
   // done
-  @Post("add-new-staff")
-  addNewStaff(@Body() CreateStaffDto : CreateStaffDto) {
-      return this.staffService.addNewStaff(CreateStaffDto);
+  @Post('add-new-staff')
+  addNewStaff(@Body() CreateStaffDto: CreateStaffDto) {
+    return this.staffService.addNewStaff(CreateStaffDto);
   }
-// done
+  // done
   @Get()
   findAll() {
     return this.staffService.findAll();
   }
-  // done 
+  // done
   @Get(':number')
   findOneBySalary(@Param('number') number: number) {
     return this.staffService.findOneBySalary(number);
   }
 
   @Get('list-staff-by-name/:order')
-  listStaffByName(@Param('string') order : 'asc' | 'desc') {
+  listStaffByName(@Param('string') order: 'asc' | 'desc') {
     return this.staffService.listStaffByName(order);
   }
 
@@ -40,27 +40,28 @@ export class StaffController {
   }
 
   @Patch('update-staff-info/:id')
-  updateStaffInfo(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
+  updateStaffInfo(
+    @Param('id') id: string,
+    @Body() updateStaffDto: UpdateStaffDto,
+  ) {
     return this.staffService.updateStaffInfo(+id, updateStaffDto);
   }
-  // done 
+  // done
   @Patch('update-schedule/:id')
   updateStaffSchedule(@Param('id') id: string, @Body() schedules: schedules) {
     return this.staffService.updateStaffSchedule(+id, schedules);
   }
 
-  // done 
+  // done
   @Get('schedule/:id')
-  viewStaffSchedule(@Param('id') id: number) { 
+  viewStaffSchedule(@Param('id') id: number) {
     return this.staffService.viewStaffSchedule(+id);
   }
-  
+
   // @Post()
   // create(@Body() createStaffDto: CreateStaffDto) {
   //   return this.staffService.create(createStaffDto);
   // }
-
-  
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
@@ -71,4 +72,9 @@ export class StaffController {
   // remove(@Param('id') id: string) {
   //   return this.staffService.remove(+id);
   // }
+
+  @Get('/profile/:id')
+  getStaffProfile(@Param('id') id: string){
+    return this.staffService.getStaffProfile(+id);
+  }
 }
