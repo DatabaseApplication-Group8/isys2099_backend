@@ -14,7 +14,7 @@ import { Model } from 'mongoose';
 export class StaffService {
   constructor(
     private prisma: PrismaService,
-    // @InjectModel(Staff.name) private staffModel: Model<Staff>,
+    @InjectModel(Staff.name) private staffModel: Model<Staff>,
   ) {}
 
   async findAll() {
