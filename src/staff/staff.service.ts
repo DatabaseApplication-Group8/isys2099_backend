@@ -199,9 +199,6 @@ export class StaffService {
         },
         data: {
           salary: UpdateStaffDto.salary,
-          dept_id: UpdateStaffDto.dept_id,
-          job_id: UpdateStaffDto.job_id,
-          manager_id: UpdateStaffDto.manager_id,
           qualifications: UpdateStaffDto.qualifications
         }
       })
