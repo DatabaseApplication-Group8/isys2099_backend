@@ -3,7 +3,7 @@ import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
-import { appointments, jobs, Prisma, schedules, staff } from '@prisma/client';
+import { appointments, jobs, Prisma, schedules, staff, users } from '@prisma/client';
 
 
 // repo
@@ -25,19 +25,19 @@ export class StaffService {
 
   // Find staff with salary equals or smaller than number provided
   // SELECT * FROM staff WHERE salary <= 70000
-  async findOneBySalary(number: number) {
+  async findOneBySalary(salary: number) {
     try {
       const data = await this.prisma.staff.findMany({
         where: {
           salary: {
-            lt: number
+            lt: salary
           },
         }
       })
       return {
         data,
         status: 200,
-        message: `Successfully find ${data.length} staff with salary <= $${number}`
+        message: `Successfully find ${data.length} staff with salary <= $${salary}`
       }
 
     } catch (err) {
@@ -303,33 +303,37 @@ export class StaffService {
   }
 
 
-  async getStaffProfile(id :number){
-    const staff = await this.prisma.staff.findUnique({
-      where: {
-        s_id: id,
-      },
-      select: {
-        users: {
-          select: {
-            id: true,
-            username: true,
-            Fname: true,
-            Minit: true,
-            Lname: true,
-            phone: true,
-            email: true,
-            sex: true,
-            birth_date: true,
-            role: true,
-          },
+  async getStaffProfile(id: number) : Promise<any> {
+    try {
+      const staff = await this.prisma.staff.findUnique({
+        where: {
+          s_id: id,
         },
-        jobs: true,
-        departments: true,
-        qualifications: true,
-        salary: true,
-      },
-    });
-    return staff;
+        select: {
+          users: {
+            select: {
+              id: true,
+              username: true,
+              Fname: true,
+              Minit: true,
+              Lname: true,
+              phone: true,
+              email: true,
+              sex: true,
+              birth_date: true,
+              role: true,
+            },
+          },
+          jobs: true,
+          departments: true,
+          qualifications: true,
+          salary: true,
+        },
+      });
+      return staff;
+    } catch (error) {
+      throw new Error("Failed to get staff profile: " + error.message);
+    }
   }
 
 

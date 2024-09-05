@@ -24,7 +24,7 @@ export class StaffController {
     return this.staffService.findAll();
   }
 
-  @Get(':number')
+  @Get('find-staff-by-salary:number')
   findOneBySalary(@Param('number') number: number) {
     return this.staffService.findOneBySalary(number);
   }
@@ -85,7 +85,7 @@ export class StaffController {
   }
 
   @Get('/profile/:id')
-  getStaffProfile(@Param('id') id: string){
+  getStaffProfile(@Param('id') id: number){
     return this.staffService.getStaffProfile(+id);
   }
 }
