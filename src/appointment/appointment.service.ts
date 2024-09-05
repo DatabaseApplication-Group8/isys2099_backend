@@ -18,8 +18,7 @@ import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 export class AppointmentService {
   constructor(
     private readonly prismaService: PrismaService,
-    @InjectModel(AppointmentNote.name)
-    private appointmentNoteModel: Model<AppointmentNote>,
+    @InjectModel(AppointmentNote.name) private appointmentNoteModel: Model<AppointmentNote>,
   ) {}
   async create(createAppointmentDto: CreateAppointmentDto) {
     const meeting_date = createAppointmentDto.meeting_date;

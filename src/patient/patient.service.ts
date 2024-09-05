@@ -1,13 +1,21 @@
+import { CreatePatientMongoDBDto } from './dto/create-patient-mongodb.dto';
 import { Injectable } from '@nestjs/common';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Patient } from './schemas/patient.schema';
+import { Model } from 'mongoose';
+import { AppointmentNote } from 'src/appointment/schemas/appointmentNote.schema';
+
 
 @Injectable()
 export class PatientService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    // @InjectModel(Patient.name) private catModel: Model<Patient>,
+  ) {}
   async create(createPatientDto: CreatePatientDto) {
-    
     const newPatient = await this.prisma.patients.create({
       data: createPatientDto,
     });
@@ -66,7 +74,7 @@ export class PatientService {
             sex: true,
             birth_date: true,
             pw: false, // Ensure that pw is not selected
-            patients: true
+            patients: true,
           },
         },
       },
@@ -75,19 +83,32 @@ export class PatientService {
     return { data: data, status: 200, total: data.length };
   }
 
+  // async createPatientNote(createPatientMongoDBDto: CreatePatientMongoDBDto) {
+  //   const { p_id, d_id, d_notes, diag_img, lab_result } =
+  //     createPatientMongoDBDto;
+  //   const patientNote = await this.patientModel.create({
+  //     p_id,
+  //     d_id,
+  //     d_notes,
+  //     diag_img,
+  //     lab_result,
+  //   });
+  //   return patientNote;
+  // }
+
   // findAll() {
   //   return `This action returns all patient`;
   // }
 
-  findOne(id: number) {
-    return `This action returns a #${id} patient`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} patient`;
+  // }
 
-  update(id: number, updatePatientDto: UpdatePatientDto) {
-    return `This action updates a #${id} patient`;
-  }
+  // update(id: number, updatePatientDto: UpdatePatientDto) {
+  //   return `This action updates a #${id} patient`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} patient`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} patient`;
+  // }
 }

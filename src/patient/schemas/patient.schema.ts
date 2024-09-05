@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { DoctorNote } from './doctorNote.schema';
 
 export type PatientDocument = HydratedDocument<Patient>;
 
@@ -9,8 +8,11 @@ export class Patient {
   @Prop()
   p_id: string;
 
-  @Prop({type: DoctorNote})
-  d_note: DoctorNote
+  @Prop()
+  d_id: string;
+
+  @Prop()
+  d_notes: string;
 
   @Prop()
   diag_img: string;

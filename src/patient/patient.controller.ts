@@ -3,6 +3,7 @@ import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { CreatePatientMongoDBDto } from './dto/create-patient-mongodb.dto';
 
 @Controller('patient')
 @ApiTags('Patient')
@@ -18,20 +19,24 @@ export class PatientController {
   findAll(@Query('name') name: string) {
     return this.patientService.findAll(name);
   }
- 
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.patientService.findOne(+id);
-  }
+  // @Post('/mongodb')
+  // createPatientNote(@Body() createPatientMongoDBDto: CreatePatientMongoDBDto) {
+  //   return this.patientService.createPatientNote(createPatientMongoDBDto);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
-    return this.patientService.update(+id, updatePatientDto);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.patientService.findOne(+id);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.patientService.remove(+id);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
+  //   return this.patientService.update(+id, updatePatientDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.patientService.remove(+id);
+  // }
 }
