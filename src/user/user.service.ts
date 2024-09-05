@@ -101,10 +101,10 @@ export class UserService {
       const newStaff: CreateStaffDto = {
         s_id: user.id,
         // job_id: createUserDto.job_id,
-        job_id: null,
+        job_id: createUserDto.job_id,
         dept_id: createUserDto.dept_id,
         // manager_id: createUserDto.manager_id,
-        manager_id: null,
+        manager_id: createUserDto.manager_id,
         qualifications: createUserDto.qualifications,
         salary: createUserDto.salary,
       };
@@ -169,6 +169,24 @@ export class UserService {
       },
     });
   }
+
+  // async updateUserInfo(userId : number, updateUserDto : UpdateUserDto) : Promise<void>{
+  //   const updatedUserInfo = await this.prisma.users.update({
+  //     where: {
+  //       id: userId,
+  //     },
+  //     data: {
+  //       Lname: updateUserDto.Lname,
+  //       Fname : updateUserDto.Fname,
+  //       Minit : updateUserDto.Minit,
+  //       phone : updateUserDto.phone,
+  //       birth_date : updateUserDto.birth_date,
+  //       email : updateUserDto.email,
+  //        // address : updateUserDto.address,
+  //       if 
+  //     }
+  //   })
+  // }
 
   // async findOneByName(name: string) {
   //   const data = await this.prisma.users.findMany({
