@@ -9,10 +9,18 @@ import {
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Prisma, appointments } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+import { AppointmentNote } from './schemas/appointmentNote.schema';
+import { Model } from 'mongoose';
+import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 
 @Injectable()
 export class AppointmentService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    @InjectModel(AppointmentNote.name)
+    private appointmentNoteModel: Model<AppointmentNote>,
+  ) {}
   async create(createAppointmentDto: CreateAppointmentDto) {
     const meeting_date = createAppointmentDto.meeting_date;
     const startTime: string = createAppointmentDto.start_time.toString();
@@ -239,27 +247,6 @@ export class AppointmentService {
     }
   }
 
-  // data = await this.prisma.patients.findMany({
-  //   where: whereClause, // Apply search conditions only if `name` is provided
-  //   select: {
-  //     p_id: true, // Select specific fields from patients
-  //     users: {
-  //       select: {
-  //         id: true,
-  //         username: true,
-  //         Fname: true,
-  //         Minit: true,
-  //         Lname: true,
-  //         phone: true,
-  //         email: true,
-  //         sex: true,
-  //         birth_date: true,
-  //         pw: false, // Ensure that pw is not selected
-  //       },
-  //     },
-  //   },
-  // });
-
   async findByStaffId(id: number) {
     const isExist = await this.prismaService.staff.findUnique({
       where: {
@@ -274,6 +261,17 @@ export class AppointmentService {
       });
     } else {
       throw new BadRequestException('Invalid Staff ID');
+    }
+  }
+
+  async createNote(createAppointmentNote: CreateAppointmentNoteDto) {
+    const { a_id, before, during, after } = createAppointmentNote
+    const note = await this.appointmentNoteModel.create({
+      a_id, before, during, after
+    });
+
+    return{
+      _id: note._id
     }
   }
 }

@@ -4,6 +4,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
+import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 
 @Controller('appointment')
 @ApiTags('Appointment')
@@ -32,5 +33,10 @@ export class AppointmentController {
   @Patch()
   cancel(@Body() updateAppointmentDto: UpdateAppointmentDto) {
     return this.appointmentService.cancel(updateAppointmentDto);
+  }
+
+  @Post('/note')
+  createNote(@Body() createAppointmentNoteDto: CreateAppointmentNoteDto) {
+    return this.appointmentService.createNote(createAppointmentNoteDto);
   }
 }
