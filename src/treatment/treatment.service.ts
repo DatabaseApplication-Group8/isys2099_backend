@@ -162,6 +162,7 @@ export class TreatmentService {
         treatment_date: true,
         start_time: true,
         end_time: true,
+        billing: true,
         staff: {
           select: {
             users: {
