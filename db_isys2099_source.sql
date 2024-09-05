@@ -142,6 +142,7 @@ CREATE TABLE `treatments` (
   `treatment_date` datetime NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
+  `billing` int NOT NULL,
   PRIMARY KEY (`t_id`),
   KEY `p_id` (`p_id`),
   KEY `doctor_id` (`doctor_id`),

@@ -5,4 +5,5 @@ export class CreateTreatmentDto {
   treatment_date: Date | string | null;
   start_time: Date | string;
   end_time: Date | string;
+  billing: number;
 }
