@@ -11,6 +11,7 @@ import { Staff, StaffSchema } from './schemas/staff.schema';
     MongooseModule.forFeature([{ name: Staff.name, schema: StaffSchema }]),
   ],
   controllers: [StaffController],
-  providers: [StaffService, PrismaService]
+  providers: [StaffService, PrismaService],
+  exports: [StaffService]
 })
 export class StaffModule {}

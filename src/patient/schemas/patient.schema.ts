@@ -15,7 +15,7 @@ export class Patient {
   d_notes: string;
 
   @Prop()
-  diag_img: string;
+  diag_img: string[];
 
   @Prop()
   lab_result: string;

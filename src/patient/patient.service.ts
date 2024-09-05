@@ -13,7 +13,7 @@ import { AppointmentNote } from 'src/appointment/schemas/appointmentNote.schema'
 export class PatientService {
   constructor(
     private prisma: PrismaService,
-    // @InjectModel(Patient.name) private catModel: Model<Patient>,
+    @InjectModel(Patient.name) private patientModel: Model<Patient>,
   ) {}
   async create(createPatientDto: CreatePatientDto) {
     const newPatient = await this.prisma.patients.create({
@@ -83,17 +83,32 @@ export class PatientService {
     return { data: data, status: 200, total: data.length };
   }
 
-  // async createPatientNote(createPatientMongoDBDto: CreatePatientMongoDBDto) {
-  //   const { p_id, d_id, d_notes, diag_img, lab_result } =
-  //     createPatientMongoDBDto;
-  //   const patientNote = await this.patientModel.create({
-  //     p_id,
-  //     d_id,
-  //     d_notes,
-  //     diag_img,
-  //     lab_result,
+  async createPatientNote(createPatientMongoDBDto: CreatePatientMongoDBDto, diag_img:string[]) {
+    const { p_id, d_id, d_notes, lab_result } =
+      createPatientMongoDBDto;
+      
+    const patientNote = await this.patientModel.create({
+      p_id,
+      d_id,
+      d_notes,
+      diag_img,
+      lab_result,
+    });
+    return patientNote;
+  }
+
+  // async createNote(createAppointmentNote: CreateAppointmentNoteDto) {
+  //   const { a_id, before, during, after } = createAppointmentNote;
+  //   const note = await this.appointmentNoteModel.create({
+  //     a_id,
+  //     before,
+  //     during,
+  //     after,
   //   });
-  //   return patientNote;
+
+  //   return {
+  //     _id: note._id,
+  //   };
   // }
 
   // findAll() {
