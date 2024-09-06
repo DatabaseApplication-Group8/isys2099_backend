@@ -236,69 +236,98 @@ export class StaffService {
   }
 
   // Update staff schedule
-  async updateStaffSchedule(s_id: number, newSchedules: schedules): Promise<void> {
+ 
+  async updateStaffSchedule(s_id: number, newSchedule: schedules): Promise<string> {
     try {
-
-      // check if the staff exist or not
-      const staffSchedule = await this.prisma.staff.findUnique({
-        where: {
-          s_id: s_id
-        },
-        select: {
-          schedules: true,
-          appointments: true
+        if (!newSchedule.scheduled_id) {
+            throw new Error("Invalid or missing schedule ID.");
         }
-      })
 
-      // if staff does not exist
-      if (!staffSchedule) {
-        throw new Error("Staff does not exist")
-      }
+        // Convert newSchedule date fields to Date objects if they are not already
+        const newScheduleDate = new Date(newSchedule.scheduled_date);
+        const newScheduleStartTime = new Date(newSchedule.start_time);
+        const newScheduleEndTime = new Date(newSchedule.end_time);
 
-      // Check for clashes in existing schedules
-      // staffSchedule.schedules.forEach(element => {
-      //   if (
-      //     (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
-      //     (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
-      //     (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
-      //   ) {
-      //     throw new Error("Schedule clash detected with existing schedules");
-      //   }
-      // });
-      const combinedEvents = [...staffSchedule.schedules, ...(staffSchedule.appointments || [])];
-        combinedEvents.forEach(element => {
-            if (
-                (newSchedules.start_time >= element.start_time && newSchedules.start_time < element.end_time) ||
-                (newSchedules.end_time > element.start_time && newSchedules.end_time <= element.end_time) ||
-                (newSchedules.start_time <= element.start_time && newSchedules.end_time >= element.end_time)
-            ) {
-                throw new Error("Schedule clash detected with existing schedules/appointments");
+        const staffDetails = await this.prisma.staff.findUnique({
+            where: {
+                s_id: s_id
+            },
+            select: {
+                schedules: {
+                    select: {
+                        scheduled_date: true,
+                        start_time: true,
+                        end_time: true
+                    }
+                },
+                appointments: {
+                    select: {
+                        meeting_date: true,
+                        start_time: true,
+                        end_time: true
+                    }
+                },
+                treatments: {
+                    select: {
+                        treatment_date: true,
+                        start_time: true,
+                        end_time: true
+                    }
+                }
             }
         });
-      await this.prisma.schedules.upsert({
-        where: {
-          scheduled_id: newSchedules.scheduled_id ?? -1
-        },
-        update: newSchedules,
-        create: {
-          ...newSchedules,
-          s_id: s_id
+
+        if (!staffDetails) {
+            throw new Error("Staff does not exist");
         }
-      })
 
-    } catch (error) {
-      console.error("Failed to update staff schedule: ", error);
-      // Optionally, log specific error details if Prisma throws known error types
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        console.error("Error details:", {
-          code: error.code,
-          meta: error.meta
+        // Filter by date
+        const formattedNewScheduleDate = newScheduleDate.toISOString().split('T')[0];
+        const combinedEvents = [
+            ...staffDetails.schedules.map(e => ({ ...e, event_date: new Date(e.scheduled_date) })),
+            ...(staffDetails.appointments || []).map(e => ({ ...e, event_date: new Date(e.meeting_date) })),
+            ...(staffDetails.treatments || []).map(e => ({ ...e, event_date: new Date(e.treatment_date) }))
+        ].filter(e => e.event_date.toISOString().split('T')[0] === formattedNewScheduleDate);
+
+        // Check for schedule clashes
+        combinedEvents.forEach(element => {
+            const elementStartTime = element.start_time.toISOString().split('T')[1].split('.')[0];
+            const elementEndTime = element.end_time.toISOString().split('T')[1].split('.')[0];
+            const newStartTime = newScheduleStartTime.toISOString().split('T')[1].split('.')[0];
+            const newEndTime = newScheduleEndTime.toISOString().split('T')[1].split('.')[0];
+
+            if (
+                (newStartTime >= elementStartTime && newStartTime < elementEndTime) ||
+                (newEndTime > elementStartTime && newEndTime <= elementEndTime) ||
+                (newStartTime <= elementStartTime && newEndTime >= elementEndTime)
+            ) {
+                throw new Error("Schedule clash detected with existing schedules, appointments, or treatments");
+            }
         });
-      }
-      throw new Error("Failed to update staff schedule: " + error.message);
-    }
-  }
 
+        // Ensure the schedule exists before updating
+        const existingSchedule = await this.prisma.schedules.findUnique({
+            where: { scheduled_id: newSchedule.scheduled_id }
+        });
+
+        if (!existingSchedule) {
+            throw new Error("Schedule does not exist");
+        }
+
+        // Perform the update if no clashes are found
+        await this.prisma.schedules.update({
+            where: {
+                scheduled_id: newSchedule.scheduled_id
+            },
+            data: newSchedule
+        });
+        return "Schedule updated successfully.";
+    } catch (error) {
+        console.error("Failed to update staff schedule: ", error);
+        throw new Error("Failed to update staff schedule: " + error.message);
+  
+    }
+}
 
   async getStaffProfile(id: number) : Promise<any> {
     try {
