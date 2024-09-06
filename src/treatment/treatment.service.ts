@@ -132,6 +132,23 @@ export class TreatmentService {
         }
       }
     }
+    const billing = (): number => {
+      let startHour: number = parseInt(startTime.slice(0, 2));
+      let startMinute: number = parseInt(startTime.slice(3, 5));
+      let endHour: number = parseInt(endTime.slice(0, 2));
+      let endMinute: number = parseInt(endTime.slice(3, 5));
+      
+      const startTotalHours: number = startHour + startMinute / 60;
+      const endTotalHours: number = endHour + endMinute / 60;
+
+      let totalHour = endTotalHours - startTotalHours;
+      totalHour = Math.floor(totalHour)
+
+      return totalHour <= 1 ? 5 : totalHour * 5;
+
+      
+    }
+    createTreatmentDto.billing = billing();
 
     const newTreatment = await this.prisma.treatments.create({
       data: createTreatmentDto,
@@ -143,6 +160,7 @@ export class TreatmentService {
         treatment_date: true,
         start_time: true,
         end_time: true,
+        billing: true,
         staff: {
           select: {
             users: {
@@ -190,6 +208,7 @@ export class TreatmentService {
           treatment_date: true,
           start_time: true,
           end_time: true,
+          billing:true,
           staff: {
             select: {
               users: true,

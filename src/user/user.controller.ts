@@ -27,6 +27,11 @@ export class UserController {
     return this.userService.findAllStaff();
   }
 
+  @Patch('update-staff/:id/:role')
+  update(@Param('id') id: string, @Param('role') role: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(+id, +role, updateUserDto);
+  }
+
   // @Get(':name')
   // findOneByName(@Param('name') name: string) {
   //   return this.userService.findOneByName(name);

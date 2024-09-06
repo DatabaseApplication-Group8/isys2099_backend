@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
-import { appointments, Prisma, schedules, staff } from '@prisma/client';
+import { appointments, jobs, Prisma, schedules, staff, users } from '@prisma/client';
 
 
 // repo
@@ -25,23 +25,23 @@ export class StaffService {
 
   // Find staff with salary equals or smaller than number provided
   // SELECT * FROM staff WHERE salary <= 70000
-  async findOneBySalary(number: number) {
+  async findOneBySalary(salary: number) {
     try {
       const data = await this.prisma.staff.findMany({
         where: {
           salary: {
-            lt: number
+            lt: salary
           },
         }
       })
       return {
         data,
         status: 200,
-        message: `Successfully find ${data.length} staff with salary <= $${number}`
+        message: `Successfully find ${data.length} staff with salary <= $${salary}`
       }
 
     } catch (err) {
-      throw Error("Unsuccess")
+      throw Error("Unsuccess" + err.message)
     }
 
   }
@@ -89,22 +89,15 @@ export class StaffService {
       // if (!isManagerIDExist){
       //   throw new Error(`Manager ID ${createStaffDto.manager_id} does not exist`)
       // }
-
+      
       await this.prisma.staff.create({
         data: {
           s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
           salary: createStaffDto.salary,
           dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
-          // job_id: isJobIdExist ? typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id) : null,
-          job_id: 1,
-          // manager_id:  isManagerIDExist ? typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id) : null,
-          manager_id: 2,
+          job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
+          manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
           qualifications: createStaffDto.qualifications,
-          // users : {
-          //   connect: {
-          //     id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
-          //   }
-          // }
         }
         
       });
@@ -118,6 +111,19 @@ export class StaffService {
         });
       }
       throw new Error("Failed to add new staff member: " + error.message);
+    }
+  }
+
+  async remove(s_id: number): Promise<boolean> {
+    try {
+      await this.prisma.staff.delete({
+        where: {
+          s_id: s_id
+        }
+      })
+      return true;
+    } catch (error) {
+      throw new Error("Failed to delete staff: " + error.message);
     }
   }
 
@@ -141,6 +147,25 @@ export class StaffService {
     }
   }
 
+  // list staff but exclude current user
+  async listStaffExludeCurrentUser(sId : number): Promise<staff[]> {
+    try {
+      const data = await this.prisma.staff.findMany({
+        include: {
+          users: true
+        },
+        where: {
+         NOT: {
+          s_id: sId
+         }
+        }
+      });
+      return data;
+    } catch (error) {
+      throw new Error("Failed to list staff excluding current user: " + error.message);
+    }
+  }
+
   // List Staff By department
   async listStaffByDepartment(dept_id: number): Promise<staff[]> {
     try {
@@ -154,6 +179,15 @@ export class StaffService {
       throw new Error("Failed to list staff by department");
     }
   }
+  
+  async listExistingJobs(): Promise<jobs[]> {
+    try {
+      const data = await this.prisma.jobs.findMany();
+      return data;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   // ???
   // update staff Info
@@ -165,9 +199,6 @@ export class StaffService {
         },
         data: {
           salary: UpdateStaffDto.salary,
-          dept_id: UpdateStaffDto.dept_id,
-          job_id: UpdateStaffDto.job_id,
-          manager_id: UpdateStaffDto.manager_id,
           qualifications: UpdateStaffDto.qualifications
         }
       })
@@ -268,19 +299,39 @@ export class StaffService {
     }
   }
 
-  // create(createStaffDto: CreateStaffDto) {
-  //   return 'This action adds a new staff';
-  // }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} staff`;
-  // }
+  async getStaffProfile(id: number) : Promise<any> {
+    try {
+      const staff = await this.prisma.staff.findUnique({
+        where: {
+          s_id: id,
+        },
+        select: {
+          users: {
+            select: {
+              id: true,
+              username: true,
+              Fname: true,
+              Minit: true,
+              Lname: true,
+              phone: true,
+              email: true,
+              sex: true,
+              birth_date: true,
+              role: true,
+            },
+          },
+          jobs: true,
+          departments: true,
+          qualifications: true,
+          salary: true,
+        },
+      });
+      return staff;
+    } catch (error) {
+      throw new Error("Failed to get staff profile: " + error.message);
+    }
+  }
 
-  // update(id: number, updateStaffDto: UpdateStaffDto) {
-  //   return `This action updates a #${id} staff`;
-  // }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} staff`;
-  // }
 }
