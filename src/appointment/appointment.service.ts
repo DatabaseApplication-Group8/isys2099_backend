@@ -276,4 +276,20 @@ export class AppointmentService {
       throw new BadRequestException('Invalid Staff ID');
     }
   }
+
+  async findTreatmentsByDateRange(start_date: Date, end_date: Date): Promise<appointments[]> {
+    try {
+      const treatments = await this.prismaService.appointments.findMany({
+        where: {
+          meeting_date: {
+            gte: start_date,
+            lte: end_date
+          }
+        },
+      });
+      return treatments;
+    } catch (error) {
+      throw new Error(`Failed to retrieve treatments within the date range: ${error.message}`);
+    }
+  }
 }

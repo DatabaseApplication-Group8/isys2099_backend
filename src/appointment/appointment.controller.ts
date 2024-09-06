@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, BadRequestException } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -32,5 +32,23 @@ export class AppointmentController {
   @Patch()
   cancel(@Body() updateAppointmentDto: UpdateAppointmentDto) {
     return this.appointmentService.cancel(updateAppointmentDto);
+  }
+
+
+  @Get('/by-date-range/:start/:end')
+  async findByDateRange(@Param('start') start: string, @Param('end') end: string) {
+    try {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      // Validate that both dates are valid and that startDate is not later than endDate
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || startDate > endDate) {
+        throw new BadRequestException('Invalid start or end date, or start date is later than end date.');
+      }
+
+      return this.appointmentService.findTreatmentsByDateRange(startDate, endDate);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }
