@@ -1,3 +1,4 @@
+import { GetTreatmentDto } from './dto/get-treatment.dto';
 import {
   BadRequestException,
   ConflictException,
@@ -44,7 +45,7 @@ export class TreatmentService {
         .toISOString()
         .split('T')[1]
         .split('.')[0];
-      
+
       if (
         treatment.doctor_id === createTreatmentDto.doctor_id &&
         treatment.p_id === createTreatmentDto.p_id
@@ -53,7 +54,7 @@ export class TreatmentService {
           `You already have another treatment with this Doctor on ${createTreatmentDto.treatment_date.toISOString().slice(0, 10)} from ${existStartTime} to ${existEndTime}.`,
         );
       }
-      
+
       if (
         (startTime >= existStartTime && startTime < existEndTime) || // Starts during an existing appointment
         (endTime > existStartTime && endTime <= existEndTime) || // Ends during an existing appointment
@@ -137,17 +138,15 @@ export class TreatmentService {
       let startMinute: number = parseInt(startTime.slice(3, 5));
       let endHour: number = parseInt(endTime.slice(0, 2));
       let endMinute: number = parseInt(endTime.slice(3, 5));
-      
+
       const startTotalHours: number = startHour + startMinute / 60;
       const endTotalHours: number = endHour + endMinute / 60;
 
       let totalHour = endTotalHours - startTotalHours;
-      totalHour = Math.floor(totalHour)
+      totalHour = Math.floor(totalHour);
 
       return totalHour <= 1 ? 5 : totalHour * 5;
-
-      
-    }
+    };
     createTreatmentDto.billing = billing();
 
     const newTreatment = await this.prisma.treatments.create({
@@ -208,7 +207,7 @@ export class TreatmentService {
           treatment_date: true,
           start_time: true,
           end_time: true,
-          billing:true,
+          billing: true,
           staff: {
             select: {
               users: true,
@@ -236,4 +235,40 @@ export class TreatmentService {
   // remove(id: number) {
   //   return `This action removes a #${id} treatment`;
   // }
+
+  async findByPatientIdInGivenDuration(getTreatmentDto: GetTreatmentDto) {
+    const isExist = await this.prisma.patients.findUnique({
+      where: {
+        p_id: +getTreatmentDto.p_id,
+      },
+    });
+    if (isExist) {
+      return await this.prisma.treatments.findMany({
+        where: {
+          p_id: +getTreatmentDto.p_id,
+          treatment_date: {
+            gte: new Date(getTreatmentDto.start_date),
+            lte: new Date(getTreatmentDto.end_date),
+          },
+        },
+        select: {
+          t_id: true,
+          p_id: true,
+          doctor_id: true,
+          description: true,
+          treatment_date: true,
+          start_time: true,
+          end_time: true,
+          billing: true,
+          staff: {
+            select: {
+              users: true,
+            },
+          },
+        },
+      });
+    } else {
+      throw new BadRequestException('Invalid Patient ID');
+    }
+  }
 }
