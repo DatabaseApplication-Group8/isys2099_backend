@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { TreatmentService } from './treatment.service';
 import { CreateTreatmentDto } from './dto/create-treatment.dto';
 import { UpdateTreatmentDto } from './dto/update-treatment.dto';
+import { GetTreatmentDto } from './dto/get-treatment.dto';
 
 @Controller('treatment')
 export class TreatmentController {
@@ -41,4 +42,11 @@ export class TreatmentController {
   // remove(@Param('id') id: string) {
   //   return this.treatmentService.remove(+id);
   // }
+
+  @Post('/patient/duration')
+  findByPatientIdInGivenDuration(@Body() getTreatmentDto: GetTreatmentDto) {
+    return this.treatmentService.findByPatientIdInGivenDuration(
+      getTreatmentDto,
+    );
+  }
 }
