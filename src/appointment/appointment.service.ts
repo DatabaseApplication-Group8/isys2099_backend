@@ -18,7 +18,8 @@ import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 export class AppointmentService {
   constructor(
     private readonly prismaService: PrismaService,
-    @InjectModel(AppointmentNote.name) private appointmentNoteModel: Model<AppointmentNote>,
+    @InjectModel(AppointmentNote.name)
+    private appointmentNoteModel: Model<AppointmentNote>,
   ) {}
   async create(createAppointmentDto: CreateAppointmentDto) {
     const meeting_date = createAppointmentDto.meeting_date;
@@ -264,13 +265,23 @@ export class AppointmentService {
   }
 
   async createNote(createAppointmentNote: CreateAppointmentNoteDto) {
-    const { a_id, before, during, after } = createAppointmentNote
+    const { a_id, before, during, after } = createAppointmentNote;
     const note = await this.appointmentNoteModel.create({
-      a_id, before, during, after
+      a_id,
+      before,
+      during,
+      after,
     });
 
-    return{
-      _id: note._id
-    }
+    return {
+      _id: note._id,
+    };
+  }
+
+  async findNoteByAppointmentId(id: string) {
+    const note = await this.appointmentNoteModel.findOne({
+      a_id: id,
+    });
+    return note;
   }
 }

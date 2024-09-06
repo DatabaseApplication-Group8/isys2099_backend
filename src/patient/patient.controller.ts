@@ -37,15 +37,18 @@ export class PatientController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() createPatientMongoDBDto: CreatePatientMongoDBDto,
   ) {
-    console.log('upload file');
-    console.log(files);
-    console.log(createPatientMongoDBDto);
     const filesName = files.map(
       (file) => file.destination + '/' + file.filename,
     );
-    console.log(filesName)
-    return this.patientService.createPatientNote(createPatientMongoDBDto, filesName);
-    
+    return this.patientService.createPatientNote(
+      createPatientMongoDBDto,
+      filesName,
+    );
+  }
+
+  @Get('/mongodb/:id')
+  getPatientMongoDb(@Param('id') id: string){
+    return this.patientService.getPatientMongoDb(id);
   }
 
   // @Post('/mongodb')

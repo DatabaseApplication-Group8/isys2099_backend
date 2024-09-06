@@ -311,13 +311,21 @@ export class StaffService {
     createStaffMongoDBDto: CreateStaffMongoDBDto,
     certificates: string[],
   ) {
-    const { training_materials, other_documents } = createStaffMongoDBDto;
+    const { s_id, training_materials, other_documents } = createStaffMongoDBDto;
 
     const staff = await this.staffModel.create({
+      s_id,
       certificates,
       training_materials,
       other_documents,
     });
+    return staff;
+  }
+
+  async getStaffMongoDb(id: string){
+    const staff = await this.staffModel.findOne({
+      s_id: id
+    })
     return staff;
   }
 }

@@ -91,16 +91,17 @@ export class StaffController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() createStaffMongoDBDto: CreateStaffMongoDBDto,
   ) {
-    console.log('upload file');
-    console.log(files);
-    console.log(createStaffMongoDBDto);
     const filesName = files.map(
       (file) => file.destination + '/' + file.filename,
     );
-    console.log(filesName);
     return this.staffService.createStaffMongoDb(
       createStaffMongoDBDto,
       filesName,
     );
+  }
+
+  @Get('/mongodb/:id')
+  getStaffMongoDb(@Param('id') id: string){
+    return this.staffService.getStaffMongoDb(id);
   }
 }

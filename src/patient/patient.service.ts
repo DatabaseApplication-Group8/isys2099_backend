@@ -83,10 +83,12 @@ export class PatientService {
     return { data: data, status: 200, total: data.length };
   }
 
-  async createPatientNote(createPatientMongoDBDto: CreatePatientMongoDBDto, diag_img:string[]) {
-    const { p_id, d_id, d_notes, lab_result } =
-      createPatientMongoDBDto;
-      
+  async createPatientNote(
+    createPatientMongoDBDto: CreatePatientMongoDBDto,
+    diag_img: string[],
+  ) {
+    const { p_id, d_id, d_notes, lab_result } = createPatientMongoDBDto;
+
     const patientNote = await this.patientModel.create({
       p_id,
       d_id,
@@ -95,6 +97,13 @@ export class PatientService {
       lab_result,
     });
     return patientNote;
+  }
+
+  async getPatientMongoDb(id: string) {
+    const patient = await this.patientModel.find({
+      p_id: id
+    });
+    return patient;
   }
 
   // async createNote(createAppointmentNote: CreateAppointmentNoteDto) {

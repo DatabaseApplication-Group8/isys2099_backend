@@ -39,4 +39,9 @@ export class AppointmentController {
   createNote(@Body() createAppointmentNoteDto: CreateAppointmentNoteDto) {
     return this.appointmentService.createNote(createAppointmentNoteDto);
   }
+
+  @Get('/note/:id')
+  findNoteByAppointmentId(@Param('id') id: string){
+    return this.appointmentService.findNoteByAppointmentId(id);
+  }
 }

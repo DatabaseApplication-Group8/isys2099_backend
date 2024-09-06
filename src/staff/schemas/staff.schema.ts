@@ -6,6 +6,9 @@ export type StaffDocument = HydratedDocument<Staff>;
 @Schema()
 export class Staff {
   @Prop()
+  s_id: string;
+
+  @Prop()
   certificates: string[];
 
   @Prop()
