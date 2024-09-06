@@ -89,7 +89,7 @@ export class StaffService {
       // if (!isManagerIDExist){
       //   throw new Error(`Manager ID ${createStaffDto.manager_id} does not exist`)
       // }
-      
+
       await this.prisma.staff.create({
         data: {
           s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
@@ -99,7 +99,7 @@ export class StaffService {
           manager_id: typeof createStaffDto.manager_id === 'number' ? createStaffDto.manager_id : parseInt(createStaffDto.manager_id),
           qualifications: createStaffDto.qualifications,
         }
-        
+
       });
     } catch (error) {
       console.error("Failed to add new staff member: ", error);
@@ -148,16 +148,16 @@ export class StaffService {
   }
 
   // list staff but exclude current user
-  async listStaffExludeCurrentUser(sId : number): Promise<staff[]> {
+  async listStaffExludeCurrentUser(sId: number): Promise<staff[]> {
     try {
       const data = await this.prisma.staff.findMany({
         include: {
           users: true
         },
         where: {
-         NOT: {
-          s_id: sId
-         }
+          NOT: {
+            s_id: sId
+          }
         }
       });
       return data;
@@ -179,7 +179,7 @@ export class StaffService {
       throw new Error("Failed to list staff by department");
     }
   }
-  
+
   async listExistingJobs(): Promise<jobs[]> {
     try {
       const data = await this.prisma.jobs.findMany();
@@ -236,100 +236,100 @@ export class StaffService {
   }
 
   // Update staff schedule
- 
+
   async updateStaffSchedule(s_id: number, newSchedule: schedules): Promise<string> {
     try {
-        if (!newSchedule.scheduled_id) {
-            throw new Error("Invalid or missing schedule ID.");
-        }
+      if (!newSchedule.scheduled_id) {
+        throw new Error("Invalid or missing schedule ID.");
+      }
 
-        // Convert newSchedule date fields to Date objects if they are not already
-        const newScheduleDate = new Date(newSchedule.scheduled_date);
-        const newScheduleStartTime = new Date(newSchedule.start_time);
-        const newScheduleEndTime = new Date(newSchedule.end_time);
+      // Convert newSchedule date fields to Date objects if they are not already
+      const newScheduleDate = new Date(newSchedule.scheduled_date);
+      const newScheduleStartTime = new Date(newSchedule.start_time);
+      const newScheduleEndTime = new Date(newSchedule.end_time);
 
-        const staffDetails = await this.prisma.staff.findUnique({
-            where: {
-                s_id: s_id
-            },
+      const staffDetails = await this.prisma.staff.findUnique({
+        where: {
+          s_id: s_id
+        },
+        select: {
+          schedules: {
             select: {
-                schedules: {
-                    select: {
-                        scheduled_date: true,
-                        start_time: true,
-                        end_time: true
-                    }
-                },
-                appointments: {
-                    select: {
-                        meeting_date: true,
-                        start_time: true,
-                        end_time: true
-                    }
-                },
-                treatments: {
-                    select: {
-                        treatment_date: true,
-                        start_time: true,
-                        end_time: true
-                    }
-                }
+              scheduled_date: true,
+              start_time: true,
+              end_time: true
             }
-        });
-
-        if (!staffDetails) {
-            throw new Error("Staff does not exist");
-        }
-
-        // Filter by date
-        const formattedNewScheduleDate = newScheduleDate.toISOString().split('T')[0];
-        const combinedEvents = [
-            ...staffDetails.schedules.map(e => ({ ...e, event_date: new Date(e.scheduled_date) })),
-            ...(staffDetails.appointments || []).map(e => ({ ...e, event_date: new Date(e.meeting_date) })),
-            ...(staffDetails.treatments || []).map(e => ({ ...e, event_date: new Date(e.treatment_date) }))
-        ].filter(e => e.event_date.toISOString().split('T')[0] === formattedNewScheduleDate);
-
-        // Check for schedule clashes
-        combinedEvents.forEach(element => {
-            const elementStartTime = element.start_time.toISOString().split('T')[1].split('.')[0];
-            const elementEndTime = element.end_time.toISOString().split('T')[1].split('.')[0];
-            const newStartTime = newScheduleStartTime.toISOString().split('T')[1].split('.')[0];
-            const newEndTime = newScheduleEndTime.toISOString().split('T')[1].split('.')[0];
-
-            if (
-                (newStartTime >= elementStartTime && newStartTime < elementEndTime) ||
-                (newEndTime > elementStartTime && newEndTime <= elementEndTime) ||
-                (newStartTime <= elementStartTime && newEndTime >= elementEndTime)
-            ) {
-                throw new Error("Schedule clash detected with existing schedules, appointments, or treatments");
+          },
+          appointments: {
+            select: {
+              meeting_date: true,
+              start_time: true,
+              end_time: true
             }
-        });
-
-        // Ensure the schedule exists before updating
-        const existingSchedule = await this.prisma.schedules.findUnique({
-            where: { scheduled_id: newSchedule.scheduled_id }
-        });
-
-        if (!existingSchedule) {
-            throw new Error("Schedule does not exist");
+          },
+          treatments: {
+            select: {
+              treatment_date: true,
+              start_time: true,
+              end_time: true
+            }
+          }
         }
+      });
 
-        // Perform the update if no clashes are found
-        await this.prisma.schedules.update({
-            where: {
-                scheduled_id: newSchedule.scheduled_id
-            },
-            data: newSchedule
-        });
-        return "Schedule updated successfully.";
+      if (!staffDetails) {
+        throw new Error("Staff does not exist");
+      }
+
+      // Filter by date
+      const formattedNewScheduleDate = newScheduleDate.toISOString().split('T')[0];
+      const combinedEvents = [
+        ...staffDetails.schedules.map(e => ({ ...e, event_date: new Date(e.scheduled_date) })),
+        ...(staffDetails.appointments || []).map(e => ({ ...e, event_date: new Date(e.meeting_date) })),
+        ...(staffDetails.treatments || []).map(e => ({ ...e, event_date: new Date(e.treatment_date) }))
+      ].filter(e => e.event_date.toISOString().split('T')[0] === formattedNewScheduleDate);
+
+      // Check for schedule clashes
+      combinedEvents.forEach(element => {
+        const elementStartTime = element.start_time.toISOString().split('T')[1].split('.')[0];
+        const elementEndTime = element.end_time.toISOString().split('T')[1].split('.')[0];
+        const newStartTime = newScheduleStartTime.toISOString().split('T')[1].split('.')[0];
+        const newEndTime = newScheduleEndTime.toISOString().split('T')[1].split('.')[0];
+
+        if (
+          (newStartTime >= elementStartTime && newStartTime < elementEndTime) ||
+          (newEndTime > elementStartTime && newEndTime <= elementEndTime) ||
+          (newStartTime <= elementStartTime && newEndTime >= elementEndTime)
+        ) {
+          throw new Error("Schedule clash detected with existing schedules, appointments, or treatments");
+        }
+      });
+
+      // Ensure the schedule exists before updating
+      const existingSchedule = await this.prisma.schedules.findUnique({
+        where: { scheduled_id: newSchedule.scheduled_id }
+      });
+
+      if (!existingSchedule) {
+        throw new Error("Schedule does not exist");
+      }
+
+      // Perform the update if no clashes are found
+      await this.prisma.schedules.update({
+        where: {
+          scheduled_id: newSchedule.scheduled_id
+        },
+        data: newSchedule
+      });
+      return "Schedule updated successfully.";
     } catch (error) {
-        console.error("Failed to update staff schedule: ", error);
-        throw new Error("Failed to update staff schedule: " + error.message);
-  
-    }
-}
+      console.error("Failed to update staff schedule: ", error);
+      throw new Error("Failed to update staff schedule: " + error.message);
 
-  async getStaffProfile(id: number) : Promise<any> {
+    }
+  }
+
+  async getStaffProfile(id: number): Promise<any> {
     try {
       const staff = await this.prisma.staff.findUnique({
         where: {
@@ -361,6 +361,5 @@ export class StaffService {
       throw new Error("Failed to get staff profile: " + error.message);
     }
   }
-
-
 }
+
