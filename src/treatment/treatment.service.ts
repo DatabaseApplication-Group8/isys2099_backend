@@ -6,6 +6,7 @@ import {
 import { CreateTreatmentDto } from './dto/create-treatment.dto';
 import { UpdateTreatmentDto } from './dto/update-treatment.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { treatments } from '@prisma/client';
 
 @Injectable()
 export class TreatmentService {
@@ -221,6 +222,21 @@ export class TreatmentService {
     }
   }
 
+  async findTreatmentsByDateRange(start_date: Date, end_date: Date): Promise<treatments[]> {
+    try {
+      const treatments = await this.prisma.treatments.findMany({
+        where: {
+          treatment_date: {
+            gte: start_date,
+            lte: end_date
+          }
+        },
+      });
+      return treatments;
+    } catch (error) {
+      throw new Error(`Failed to retrieve treatments within the date range: ${error.message}`);
+    }
+  }
   // findAll() {
   //   return `This action returns all treatment`;
   // }
