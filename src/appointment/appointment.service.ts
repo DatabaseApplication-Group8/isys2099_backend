@@ -273,9 +273,7 @@ export class AppointmentService {
       after,
     });
 
-    return {
-      _id: note._id,
-    };
+    return note;
   }
 
   async findNoteByAppointmentId(id: string) {
