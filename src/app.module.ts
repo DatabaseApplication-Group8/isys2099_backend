@@ -11,16 +11,39 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
 import { TreatmentModule } from './treatment/treatment.module';
 import { DepartmentModule } from './department/department.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { JobsModule } from './jobs/jobs.modules';
 
 @Module({
-  imports: [StaffModule, PatientModule, AppointmentModule, AuthModule, ReportModule, UserModule, TreatmentModule, DepartmentModule,JobsModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
+    StaffModule,
+    PatientModule,
+    AppointmentModule,
+    AuthModule,
+    ReportModule,
+    UserModule,
+    TreatmentModule,
+    DepartmentModule,
+    JobsModule
+  ],
   controllers: [AppController],
-  providers: [AppService,
+  providers: [
+    AppService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    }
+    },
   ],
 })
 export class AppModule {}

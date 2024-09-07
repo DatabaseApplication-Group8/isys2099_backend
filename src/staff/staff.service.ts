@@ -4,12 +4,19 @@ import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { PrismaService } from 'prisma/prisma.service';
 import { appointments, jobs, Prisma, schedules, staff, users } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+import { Staff, StaffDocument } from './schemas/staff.schema';
+import { Model } from 'mongoose';
+import { CreateStaffMongoDBDto } from './dto/create-staff-mongodb.dto';
 
 
 // repo
 @Injectable()
 export class StaffService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    @InjectModel(Staff.name) private staffModel: Model<Staff>,
+  ) {}
 
   async findAll() {
     // SELECT * FROM staff JOIN users ON users.id = staff.s_id
@@ -17,9 +24,9 @@ export class StaffService {
       include: {
         users: true,
         departments: true,
-        jobs: true
-      }
-    })
+        jobs: true,
+      },
+    });
     return data;
   }
 
@@ -32,8 +39,8 @@ export class StaffService {
           salary: {
             lt: salary
           },
-        }
-      })
+        },
+      });
       return {
         data,
         status: 200,
@@ -43,13 +50,11 @@ export class StaffService {
     } catch (err) {
       throw Error("Unsuccess" + err.message)
     }
-
   }
 
   // add new staff
   async addNewStaff(createStaffDto: CreateStaffDto): Promise<void> {
     try {
-
       // const isJobIdExist = await this.prisma.jobs.findUnique({
       //   where: {
       //     job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
@@ -61,15 +66,20 @@ export class StaffService {
       //     dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
       //   }
       // })
-      const departmentId = typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id);
+      const departmentId =
+        typeof createStaffDto.dept_id === 'number'
+          ? createStaffDto.dept_id
+          : parseInt(createStaffDto.dept_id);
       if (isNaN(departmentId)) {
-        throw new Error(`Invalid department ID provided. ${createStaffDto.dept_id} is not a number`);
+        throw new Error(
+          `Invalid department ID provided. ${createStaffDto.dept_id} is not a number`,
+        );
       }
 
       const isDeptIDExist = await this.prisma.departments.findUnique({
         where: {
           dept_id: departmentId,
-        }
+        },
       });
 
       // const isManagerIDExist = await this.prisma.staff.findUnique({
@@ -83,7 +93,9 @@ export class StaffService {
       // }
 
       if (!isDeptIDExist) {
-        throw new Error(`Department ID ${createStaffDto.dept_id} does not exist`)
+        throw new Error(
+          `Department ID ${createStaffDto.dept_id} does not exist`,
+        );
       }
 
       // if (!isManagerIDExist){
@@ -92,7 +104,10 @@ export class StaffService {
 
       await this.prisma.staff.create({
         data: {
-          s_id: typeof createStaffDto.s_id === 'number' ? createStaffDto.s_id : parseInt(createStaffDto.s_id),
+          s_id:
+            typeof createStaffDto.s_id === 'number'
+              ? createStaffDto.s_id
+              : parseInt(createStaffDto.s_id),
           salary: createStaffDto.salary,
           dept_id: typeof createStaffDto.dept_id === 'number' ? createStaffDto.dept_id : parseInt(createStaffDto.dept_id),
           job_id: typeof createStaffDto.job_id === 'number' ? createStaffDto.job_id : parseInt(createStaffDto.job_id),
@@ -102,15 +117,15 @@ export class StaffService {
 
       });
     } catch (error) {
-      console.error("Failed to add new staff member: ", error);
+      console.error('Failed to add new staff member: ', error);
       // Optionally, log specific error details if Prisma throws known error types
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        console.error("Error details:", {
+        console.error('Error details:', {
           code: error.code,
-          meta: error.meta
+          meta: error.meta,
         });
       }
-      throw new Error("Failed to add new staff member: " + error.message);
+      throw new Error('Failed to add new staff member: ' + error.message);
     }
   }
 
@@ -132,18 +147,18 @@ export class StaffService {
     try {
       const data = await this.prisma.staff.findMany({
         include: {
-          users: true  // Make sure to include users to access the Fname field
+          users: true, // Make sure to include users to access the Fname field
         },
         orderBy: {
           users: {
-            Fname: order  // Ensure this is supported by your Prisma Client version
-          }
-        }
+            Fname: order, // Ensure this is supported by your Prisma Client version
+          },
+        },
       });
-      return data;  // Return the fetched data
+      return data; // Return the fetched data
     } catch (error) {
-      console.error("Failed to list staff by name: ", error);
-      throw new Error("Failed to list staff by name: " + error.message);
+      console.error('Failed to list staff by name: ', error);
+      throw new Error('Failed to list staff by name: ' + error.message);
     }
   }
 
@@ -172,11 +187,11 @@ export class StaffService {
       const data = await this.prisma.staff.findMany({
         where: {
           dept_id: dept_id,
-        }
+        },
       });
       return data;
     } catch (error) {
-      throw new Error("Failed to list staff by department");
+      throw new Error('Failed to list staff by department');
     }
   }
 
@@ -191,7 +206,10 @@ export class StaffService {
 
   // ???
   // update staff Info
-  async updateStaffInfo(s_id: number, UpdateStaffDto: UpdateStaffDto): Promise<void> {
+  async updateStaffInfo(
+    s_id: number,
+    UpdateStaffDto: UpdateStaffDto,
+  ): Promise<void> {
     try {
       await this.prisma.staff.update({
         where: {
@@ -203,8 +221,9 @@ export class StaffService {
         }
       })
 
+
     } catch (error) {
-      throw new Error("Failed to update staff info");
+      throw new Error('Failed to update staff info');
     }
   }
 
@@ -215,28 +234,24 @@ export class StaffService {
           s_id: s_id,
         },
         select: {
-          schedules: true
-        }
-      }
-      )
-      return schedule.schedules
-
-    }
-    catch (error) {
-      console.error("Failed to add new staff member: ", error);
+          schedules: true,
+        },
+      });
+      return schedule.schedules;
+    } catch (error) {
+      console.error('Failed to add new staff member: ', error);
       // Optionally, log specific error details if Prisma throws known error types
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        console.error("Error details:", {
+        console.error('Error details:', {
           code: error.code,
-          meta: error.meta
+          meta: error.meta,
         });
       }
-      throw new Error("Failed to add new staff member: " + error.message);
+      throw new Error('Failed to add new staff member: ' + error.message);
     }
   }
 
   // Update staff schedule
-
   async updateStaffSchedule(s_id: number, newSchedule: schedules): Promise<string> {
     try {
       if (!newSchedule.scheduled_id) {
@@ -250,7 +265,7 @@ export class StaffService {
 
       const staffDetails = await this.prisma.staff.findUnique({
         where: {
-          s_id: s_id
+          s_id: s_id,
         },
         select: {
           schedules: {
@@ -360,6 +375,38 @@ export class StaffService {
     } catch (error) {
       throw new Error("Failed to get staff profile: " + error.message);
     }
+
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  async createStaffMongoDb(
+    createStaffMongoDBDto: CreateStaffMongoDBDto,
+    certificates: string[],
+  ) {
+    const { s_id, training_materials, other_documents } = createStaffMongoDBDto;
+
+    const staff = await this.staffModel.create({
+      s_id,
+      certificates,
+      training_materials,
+      other_documents,
+    });
+    return staff;
+  }
+
+  async getStaffMongoDb(id: string){
+    const staff = await this.staffModel.findOne({
+      s_id: id
+    })
+    return staff;
+  }
+ 
 }
 

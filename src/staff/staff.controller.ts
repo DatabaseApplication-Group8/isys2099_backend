@@ -1,9 +1,12 @@
 import { schedules } from '@prisma/client';
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateStaffMongoDBDto } from './dto/create-staff-mongodb.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 
 // Use Case
@@ -23,6 +26,7 @@ export class StaffController {
   findAll() {
     return this.staffService.findAll();
   }
+
 
   @Get('find-staff-by-salary:number')
   findOneBySalary(@Param('number') number: number) {
@@ -79,6 +83,39 @@ export class StaffController {
   //   return this.staffService.update(+id, updateStaffDto);
   // }
 
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.staffService.remove(+id);
+  // }
+
+  @Post('/mongodb')
+  @UseInterceptors(
+    FilesInterceptor('certificates', 10, {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${Date.now()}-${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  createStaffMongoDb(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() createStaffMongoDBDto: CreateStaffMongoDBDto,
+  ) {
+    const filesName = files.map(
+      (file) => file.destination + '/' + file.filename,
+    );
+    return this.staffService.createStaffMongoDb(
+      createStaffMongoDBDto,
+      filesName,
+    );
+  }
+
+  @Get('/mongodb/:id')
+  getStaffMongoDb(@Param('id') id: string){
+    return this.staffService.getStaffMongoDb(id);
+
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.staffService.remove(+id);
@@ -87,5 +124,6 @@ export class StaffController {
   @Get('/profile/:id')
   getStaffProfile(@Param('id') id: number){
     return this.staffService.getStaffProfile(+id);
+
   }
 }

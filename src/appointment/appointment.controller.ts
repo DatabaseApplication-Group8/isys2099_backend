@@ -4,6 +4,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
+import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 
 @Controller('appointment')
 @ApiTags('Appointment')
@@ -34,6 +35,15 @@ export class AppointmentController {
     return this.appointmentService.cancel(updateAppointmentDto);
   }
 
+  @Post('/note')
+  createNote(@Body() createAppointmentNoteDto: CreateAppointmentNoteDto) {
+    return this.appointmentService.createNote(createAppointmentNoteDto);
+  }
+
+  @Get('/note/:id')
+  findNoteByAppointmentId(@Param('id') id: string){
+    return this.appointmentService.findNoteByAppointmentId(id);
+
 
   @Get('/by-date-range/:start/:end')
   async findByDateRange(@Param('start') start: string, @Param('end') end: string) {
@@ -50,5 +60,6 @@ export class AppointmentController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+    
   }
 }
