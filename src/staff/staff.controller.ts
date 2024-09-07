@@ -26,8 +26,9 @@ export class StaffController {
   findAll() {
     return this.staffService.findAll();
   }
-  // done
-  @Get(':number')
+
+
+  @Get('find-staff-by-salary:number')
   findOneBySalary(@Param('number') number: number) {
     return this.staffService.findOneBySalary(number);
   }
@@ -59,6 +60,17 @@ export class StaffController {
   @Get('schedule/:id')
   viewStaffSchedule(@Param('id') id: number) {
     return this.staffService.viewStaffSchedule(+id);
+  }
+
+  
+  @Get('list-staff-exclude-current-user/:id')
+  listStaffExludeCurrentUser(@Param('id') s_id: number) {
+    return this.staffService.listStaffExludeCurrentUser(+s_id);
+  }
+
+  @Get('list-existing-jobs')
+  listExistingJobs() {
+    return this.staffService.listExistingJobs();
   }
 
   // @Post()
@@ -103,5 +115,15 @@ export class StaffController {
   @Get('/mongodb/:id')
   getStaffMongoDb(@Param('id') id: string){
     return this.staffService.getStaffMongoDb(id);
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.staffService.remove(+id);
+  }
+
+  @Get('/profile/:id')
+  getStaffProfile(@Param('id') id: number){
+    return this.staffService.getStaffProfile(+id);
+
   }
 }

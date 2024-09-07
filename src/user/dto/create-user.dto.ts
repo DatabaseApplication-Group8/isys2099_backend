@@ -1,3 +1,4 @@
+import { Decimal } from "@prisma/client/runtime/library";
 
 export class CreateUserDto {
   username: string;
@@ -20,5 +21,5 @@ export class CreateUserDto {
   dept_id?: number;
   manager_id?: number;
   qualifications?: string;
-  salary?: number;
+  salary?: Decimal;
 }

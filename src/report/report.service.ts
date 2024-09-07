@@ -4,8 +4,10 @@ import { UpdateReportDto } from './dto/update-report.dto';
 
 @Injectable()
 export class ReportService {
-  create(createReportDto: CreateReportDto) {
-    return 'This action adds a new report';
+
+  async create(createReportDto: CreateReportDto) : Promise<void> {
+    
+    // return 'This action adds a new report';
   }
 
   findAll() {

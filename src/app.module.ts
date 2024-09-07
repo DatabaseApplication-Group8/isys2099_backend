@@ -13,6 +13,7 @@ import { TreatmentModule } from './treatment/treatment.module';
 import { DepartmentModule } from './department/department.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { JobsModule } from './jobs/jobs.modules';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     UserModule,
     TreatmentModule,
     DepartmentModule,
+    JobsModule
   ],
   controllers: [AppController],
   providers: [

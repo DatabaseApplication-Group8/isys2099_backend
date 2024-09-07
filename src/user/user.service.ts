@@ -10,6 +10,7 @@ import { PatientService } from 'src/patient/patient.service';
 import { CreatePatientDto } from 'src/patient/dto/create-patient.dto';
 import { StaffService } from 'src/staff/staff.service';
 import { CreateStaffDto } from 'src/staff/dto/create-staff.dto';
+import { UpdateStaffDto } from 'src/staff/dto/update-staff.dto';
 
 @Injectable()
 export class UserService {
@@ -101,10 +102,10 @@ export class UserService {
       const newStaff: CreateStaffDto = {
         s_id: user.id,
         // job_id: createUserDto.job_id,
-        job_id: null,
+        job_id: createUserDto.job_id,
         dept_id: createUserDto.dept_id,
         // manager_id: createUserDto.manager_id,
-        manager_id: null,
+        manager_id: createUserDto.manager_id,
         qualifications: createUserDto.qualifications,
         salary: createUserDto.salary,
       };
@@ -124,39 +125,47 @@ export class UserService {
     });
   }
 
-  // async findAll(name?: string) {
-  //   const id = !isNaN(Number(name)) ? Number(name) : undefined;
-  //   const data = await this.prisma.users.findMany({
-  //     where: {
-  //       OR: [
-  //         { id: id },
-  //         {
-  //           Fname: {
-  //             contains: name,
-  //           },
-  //         },
-  //         {
-  //           Lname: {
-  //             contains: name,
-  //           },
-  //         },
-  //       ],
-  //     },
-  //     select: {
-  //       id: true,
-  //       username: true,
-  //       Fname: true,
-  //       Minit: true,
-  //       Lname: true,
-  //       phone: true,
-  //       email: true,
-  //       sex: true,
-  //       birth_date: true,
-  //     },
-  //   });
-
-  //   return { data: data, status: 200, total: data.length };
-  // }
+  async update(id: number, role: number, updateUserDto: UpdateUserDto): Promise<boolean> {
+    const { Fname, Minit, Lname, phone, birth_date, email } = updateUserDto;
+  
+    try {
+      // Check if email is being changed and if it's unique
+      if (email) {
+        const existingUser = await this.prisma.users.findFirst({
+          where: {
+            email,
+            NOT: {
+              id: id, // Exclude the current user
+            },
+          },
+        });
+  
+        if (existingUser) {
+          throw new BadRequestException(`Email ${email} is already in use.`);
+        }
+      }
+  
+      // Update user information
+      await this.prisma.users.update({
+        where: { id: id },
+        data: { Fname, Minit, Lname, phone, birth_date, email },
+      });
+  
+      // If the user is a staff, update additional staff information
+      if (role === 2 && (updateUserDto.qualifications || updateUserDto.salary)) {
+        const updateStaffDto: UpdateStaffDto = {
+          qualifications: updateUserDto.qualifications,
+          salary: updateUserDto.salary,
+        };
+  
+        await this.staffService.updateStaffInfo(id, updateStaffDto);
+      }
+  
+      return true;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   async findAllStaff() {
     return await this.prisma.users.findMany({
@@ -169,18 +178,7 @@ export class UserService {
       },
     });
   }
-
-  // async findOneByName(name: string) {
-  //   const data = await this.prisma.users.findMany({
-  //     where: {
-  //       OR: [{ Fname: { contains: name } }, { Lname: { contains: name } }],
-  //     },
-  //   });
-
-  //   return {
-  //     data,
-  //     message: 'Success!',
-  //     status: 200,
-  //   };
-  // }
 }
+
+
+
