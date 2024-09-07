@@ -35,18 +35,22 @@ export class AppointmentController {
   }
 
 
-  @Get('/by-date-range/:start/:end')
-  async findByDateRange(@Param('start') start: string, @Param('end') end: string) {
+  @Get('/by-date-range/:s_id/:meeting_date')
+  async findByDateRange(@Param('s_id') s_id: number , @Param('meeting_date') meeting_date: string) {
     try {
-      const startDate = new Date(start);
-      const endDate = new Date(end);
+      // console.log("meeting_date: ", meeting_date);
+      const meeting_date_converted = new Date(meeting_date);
+      meeting_date_converted.setMinutes(meeting_date_converted.getMinutes() - meeting_date_converted.getTimezoneOffset());
 
+      // console.log("meeting_date: ", meeting_date);
       // Validate that both dates are valid and that startDate is not later than endDate
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || startDate > endDate) {
-        throw new BadRequestException('Invalid start or end date, or start date is later than end date.');
+      if (isNaN(meeting_date_converted.getTime())) {
+        throw new BadRequestException('Invalid date');
       }
 
-      return this.appointmentService.findTreatmentsByDateRange(startDate, endDate);
+
+
+      return this.appointmentService.findAppointmentsByDateRange(+s_id,meeting_date_converted);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

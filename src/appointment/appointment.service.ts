@@ -277,17 +277,16 @@ export class AppointmentService {
     }
   }
 
-  async findTreatmentsByDateRange(start_date: Date, end_date: Date): Promise<appointments[]> {
+  async findAppointmentsByDateRange(s_id: number, meeting_date : Date): Promise<appointments[]> {
     try {
-      const treatments = await this.prismaService.appointments.findMany({
+      console.log("meeting_date: ", meeting_date);
+      const appointments = await this.prismaService.appointments.findMany({
         where: {
-          meeting_date: {
-            gte: start_date,
-            lte: end_date
-          }
+          s_id: s_id,
+          meeting_date: meeting_date,
         },
       });
-      return treatments;
+      return appointments;
     } catch (error) {
       throw new Error(`Failed to retrieve treatments within the date range: ${error.message}`);
     }

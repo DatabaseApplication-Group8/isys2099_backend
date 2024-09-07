@@ -1,5 +1,5 @@
 import { schedules } from '@prisma/client';
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
@@ -58,6 +58,21 @@ export class StaffController {
     return this.staffService.viewStaffSchedule(+id);
   }
 
+  @Get('view-staff-schedule-by-date/:id/:schedule_date')
+  viewStaffScheduleByDate(@Param('id') id: number, @Param('schedule_date') schedule_date: string) {
+    try {
+
+      const schedule_date_converted = new Date(schedule_date);
+      schedule_date_converted.setMinutes(schedule_date_converted.getMinutes() - schedule_date_converted.getTimezoneOffset());
+      if (isNaN(schedule_date_converted.getTime())) {
+        throw new BadRequestException('Invalid date');
+      }
+      
+      return this.staffService.viewStaffScheduleByDate(+id, schedule_date_converted);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
   
   @Get('list-staff-exclude-current-user/:id')
   listStaffExludeCurrentUser(@Param('id') s_id: number) {
