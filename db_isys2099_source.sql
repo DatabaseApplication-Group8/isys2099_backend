@@ -54,17 +54,18 @@ CREATE TABLE `dept_locations` (
   CONSTRAINT `dept_locations_ibfk_1` FOREIGN KEY (`dept_id`) REFERENCES `departments` (`dept_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `job_history`;
 CREATE TABLE `job_history` (
+  `job_history_id` int NOT NULL AUTO_INCREMENT,
   `s_id` int NOT NULL,
   `job_id` int NOT NULL,
   `start_date` date NOT NULL,
   `job_status` tinyint(1) NOT NULL,
-  PRIMARY KEY (`s_id`,`job_id`),
+  PRIMARY KEY (`job_history_id`),
   KEY `job_id` (`job_id`),
+  KEY `idx_sid_jobid` (`s_id`,`job_id`,`start_date`) USING BTREE,
   CONSTRAINT `job_history_ibfk_1` FOREIGN KEY (`s_id`) REFERENCES `staff` (`s_id`),
   CONSTRAINT `job_history_ibfk_2` FOREIGN KEY (`job_id`) REFERENCES `jobs` (`job_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 DROP TABLE IF EXISTS `jobs`;
 CREATE TABLE `jobs` (
