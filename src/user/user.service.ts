@@ -150,10 +150,13 @@ export class UserService {
         where: { id: id },
         data: { Fname, Minit, Lname, phone, birth_date, email },
       });
-  
+      // console.log('updateUserDto:', updateUserDto.job_id);
       // If the user is a staff, update additional staff information
       if (role === 2 && (updateUserDto.qualifications || updateUserDto.salary)) {
         const updateStaffDto: UpdateStaffDto = {
+          job_id: updateUserDto.job_id,
+          dept_id: updateUserDto.dept_id,
+          manager_id: updateUserDto.manager_id,
           qualifications: updateUserDto.qualifications,
           salary: updateUserDto.salary,
         };

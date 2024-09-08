@@ -198,6 +198,9 @@ export class StaffService {
           s_id: s_id,
         },
         data: {
+          job_id: UpdateStaffDto.job_id,
+          dept_id: UpdateStaffDto.dept_id,
+          manager_id: UpdateStaffDto.manager_id,
           salary: UpdateStaffDto.salary,
           qualifications: UpdateStaffDto.qualifications
         }
@@ -255,7 +258,7 @@ export class StaffService {
       throw new Error("Failed to view staff schedule by date: " + error.message);
     }
   }
-  
+
   // Update staff schedule
 
   async updateStaffSchedule(s_id: number, newSchedule: schedules): Promise<string> {

@@ -9,12 +9,12 @@ import { CreateJobsHistoryDto } from './dto/create-jobs-history';
 @Controller('jobs')
 @ApiTags('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(private readonly jobsService: JobsService) { }
 
-//   @Post()
-//   create(@Body() createDepartmentDto: CreateDepartmentDto) {
-//     return this.departmentService.create(createDepartmentDto);
-//   }
+  //   @Post()
+  //   create(@Body() createDepartmentDto: CreateDepartmentDto) {
+  //     return this.departmentService.create(createDepartmentDto);
+  //   }
 
   @Get()
   findAll() {
@@ -25,9 +25,13 @@ export class JobsController {
   addNewJobsHistory(@Body() createJobsHistoryDto: CreateJobsHistoryDto) {
     return this.jobsService.addNewJobsHistory(createJobsHistoryDto);
   }
-//   @Get('find-department-id-by-name/:dept_name')
-//     findDepartmentIdByName(@Param('dept_name') dept_name: string) {
-//         return this.departmentService.findDepartmentIdByName(dept_name);
-//     }
+  //   @Get('find-department-id-by-name/:dept_name')
+  //     findDepartmentIdByName(@Param('dept_name') dept_name: string) {
+  //         return this.departmentService.findDepartmentIdByName(dept_name);
+  //     }
 
+  @Get('find-jobs-history-by-s_id/:s_id')
+  findJobsHistoryByS_id(@Param('s_id') s_id: number) {
+    return this.jobsService.findJobHistoryByStaffId(+s_id);
+  }
 }

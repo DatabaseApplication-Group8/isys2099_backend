@@ -67,7 +67,7 @@ export class JobsService {
                         job_status: true
                     }
                 });
-    
+                console.log('s_id and job_id:', createJobsHistoryDto.s_id, createJobsHistoryDto.job_id);
                 // If an active job history exists, update it to inactive
                 if (existingActiveJob) {
                     await prisma.job_history.updateMany({
@@ -99,4 +99,20 @@ export class JobsService {
             throw new BadRequestException(e.message);
         }
     }
+
+    async findJobHistoryByStaffId(s_id: number) {
+        try {
+            return await this.prismaService.job_history.findMany({
+                where: {
+                    s_id: s_id
+                },
+                include: {
+                    jobs: true // This assumes the relation name is `jobs` in your Prisma model.
+                }
+            });
+        } catch (e) {
+            throw new BadRequestException(e.message);
+        }
+    }
+
 }
