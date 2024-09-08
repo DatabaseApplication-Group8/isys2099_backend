@@ -7,6 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model appointments {
+  appointment_id Int      @id @default(autoincrement())
+  meeting_date   DateTime @db.Date
+  p_id           Int
+  s_id           Int
+  purpose        String   @db.VarChar(255)
+  start_time     DateTime @db.Time(0)
+  end_time       DateTime @db.Time(0)
+  location       String?  @db.VarChar(255)
+  meeting_status Boolean?
+  patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
+  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
+
+  @@index([p_id], map: "p_id")
+  @@index([s_id], map: "s_id")
+}
+
 model departments {
   dept_id        Int              @id
   dept_name      String           @db.VarChar(50)
@@ -25,14 +42,15 @@ model dept_locations {
 }
 
 model job_history {
-  s_id       Int
-  job_id     Int
-  start_date DateTime @db.Date
-  job_status Boolean
-  staff      staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_1")
-  jobs       jobs     @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_2")
+  job_history_id Int      @id @default(autoincrement())
+  s_id           Int
+  job_id         Int
+  start_date     DateTime @db.Date
+  job_status     Boolean
+  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_1")
+  jobs           jobs     @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_2")
 
-  @@id([s_id, job_id])
+  @@unique([s_id, job_id, start_date], map: "idx_sid_jobid")
   @@index([job_id], map: "job_id")
 }
 
@@ -138,21 +156,4 @@ model users {
   roles      roles     @relation(fields: [role], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
 
   @@index([role], map: "role")
-}
-
-model appointments {
-  appointment_id Int      @id @default(autoincrement())
-  meeting_date   DateTime @db.Date
-  p_id           Int
-  s_id           Int
-  purpose        String   @db.VarChar(255)
-  start_time     DateTime @db.Time(0)
-  end_time       DateTime @db.Time(0)
-  location       String?  @db.VarChar(255)
-  meeting_status Boolean?
-  patients       patients @relation(fields: [p_id], references: [p_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_1")
-  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "appointments_ibfk_2")
-
-  @@index([p_id], map: "p_id")
-  @@index([s_id], map: "s_id")
 }
