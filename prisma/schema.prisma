@@ -47,7 +47,7 @@ model job_history {
   job_id         Int
   start_date     DateTime @db.Date
   job_status     Boolean
-  staff          staff    @relation(fields: [s_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_1")
+  staff          users    @relation(fields: [s_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_1")
   jobs           jobs     @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction, map: "job_history_ibfk_2")
 
   @@index([s_id, job_id, start_date], map: "idx_sid_jobid")
@@ -108,18 +108,14 @@ model staff {
   qualifications String         @db.VarChar(255)
   salary         Decimal        @db.Decimal(10, 2)
   appointments   appointments[]
-  job_history    job_history[]
   schedules      schedules[]
   users          users          @relation(fields: [s_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_1")
   jobs           jobs           @relation(fields: [job_id], references: [job_id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_2")
   departments    departments    @relation(fields: [dept_id], references: [dept_id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_3")
-  staff          staff?         @relation("staffTostaff", fields: [manager_id], references: [s_id], onDelete: NoAction, onUpdate: NoAction, map: "staff_ibfk_4")
-  other_staff    staff[]        @relation("staffTostaff")
   treatments     treatments[]
 
   @@index([dept_id], map: "dept_id")
   @@index([job_id], map: "job_id")
-  @@index([manager_id], map: "manager_id")
 }
 
 model treatments {
@@ -140,20 +136,21 @@ model treatments {
 }
 
 model users {
-  id         Int       @id @default(autoincrement())
-  role       Int
-  username   String    @unique(map: "username") @db.VarChar(20)
-  pw         String    @db.VarChar(128)
-  Fname      String    @db.VarChar(50)
-  Minit      String?   @db.VarChar(50)
-  Lname      String    @db.VarChar(50)
-  phone      String    @db.VarChar(11)
-  email      String    @unique(map: "email") @db.VarChar(50)
-  sex        String?   @db.Char(1)
-  birth_date DateTime? @db.Date
-  patients   patients?
-  staff      staff?
-  roles      roles     @relation(fields: [role], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
+  id          Int           @id @default(autoincrement())
+  role        Int
+  username    String        @unique(map: "username") @db.VarChar(20)
+  pw          String        @db.VarChar(128)
+  Fname       String        @db.VarChar(50)
+  Minit       String?       @db.VarChar(50)
+  Lname       String        @db.VarChar(50)
+  phone       String        @db.VarChar(11)
+  email       String        @unique(map: "email") @db.VarChar(50)
+  sex         String?       @db.Char(1)
+  birth_date  DateTime?     @db.Date
+  job_history job_history[]
+  patients    patients?
+  staff       staff?
+  roles       roles         @relation(fields: [role], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
 
   @@index([role], map: "role")
 }
