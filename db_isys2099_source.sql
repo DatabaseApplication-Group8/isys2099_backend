@@ -176,6 +176,10 @@ ALTER TABLE treatments
 
 ALTER TABLE appointments
     DROP COLUMN meeting_link;
+  
+-- ALTER TABLE `job_history` ADD INDEX `idx_sid_jobid` (`s_id`, `job_id`);
+
+-- ALTER TABLE `job_history` DROP PRIMARY KEY;
 
 INSERT INTO `roles` (`role_id`, `role_name`) VALUES
 (1, 'Admin'),

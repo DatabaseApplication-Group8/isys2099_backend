@@ -1,3 +1,4 @@
+import { treatments } from '@prisma/client';
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, BadRequestException } from '@nestjs/common';
 import { TreatmentService } from './treatment.service';
 import { CreateTreatmentDto } from './dto/create-treatment.dto';
@@ -40,6 +41,26 @@ export class TreatmentController {
     }
   }
 
+
+  @Get('/by-treatment-date/:s_id/:treatment_date')
+    async findTreatmentsMeetingDate(@Param('s_id') s_id : number,@Param('treatment_date') treatment_date: string) {
+      try {
+        // console.log("meeting_date: ", meeting_date);
+        const tretment_date_converted = new Date(treatment_date);
+        tretment_date_converted.setMinutes(tretment_date_converted.getMinutes() - tretment_date_converted.getTimezoneOffset());
+    
+        console.log("treatment_date: ", treatment_date);
+        // Validate that both dates are valid and that startDate is not later than endDate
+        if (isNaN(tretment_date_converted.getTime())) {
+          throw new BadRequestException('Invalid date');
+        }
+    
+    
+        return this.treatmentService.findTreatmentsMeetingDate(+s_id,tretment_date_converted);
+      } catch (error) {
+        throw new BadRequestException(error.message);
+      }
+    }
 
   // @Get(':id')
   // findOne(@Param('id') id: string) {

@@ -198,6 +198,9 @@ export class StaffService {
           s_id: s_id,
         },
         data: {
+          job_id: UpdateStaffDto.job_id,
+          dept_id: UpdateStaffDto.dept_id,
+          manager_id: UpdateStaffDto.manager_id,
           salary: UpdateStaffDto.salary,
           qualifications: UpdateStaffDto.qualifications
         }
@@ -232,6 +235,27 @@ export class StaffService {
         });
       }
       throw new Error("Failed to add new staff member: " + error.message);
+    }
+  }
+
+  async viewStaffScheduleByDate(s_id: number, schedule_date: Date): Promise<schedules[]> {
+    try {
+      const schedule = await this.prisma.staff.findUnique({
+        where: {
+          s_id: s_id,
+        },
+        select: {
+          schedules: {
+            where: {
+              scheduled_date: schedule_date
+            }
+          }
+        }
+      });
+      return schedule.schedules;
+    } catch (error) {
+      console.error("Failed to view staff schedule by date: ", error);
+      throw new Error("Failed to view staff schedule by date: " + error.message);
     }
   }
 
