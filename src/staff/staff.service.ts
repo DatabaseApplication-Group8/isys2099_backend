@@ -272,6 +272,13 @@ export class StaffService {
       const newScheduleStartTime = new Date(newSchedule.start_time);
       const newScheduleEndTime = new Date(newSchedule.end_time);
 
+      // console.log('newScheduleDate:', newScheduleDate);
+      // console.log('newScheduleStartTime:', newScheduleStartTime);
+      // console.log('newScheduleEndTime:', newScheduleEndTime);
+
+      console.log('newScheduleDate:', newSchedule.start_time);
+
+
       const staffDetails = await this.prisma.staff.findUnique({
         where: {
           s_id: s_id
@@ -350,6 +357,73 @@ export class StaffService {
       console.error("Failed to update staff schedule: ", error);
       throw new Error("Failed to update staff schedule: " + error.message);
 
+    }
+  }
+
+  async createStaffSchedule(s_id: number, newSchedule: schedules): Promise<string> {
+    try {
+      // Convert newSchedule date fields to Date objects if they are not already
+      const newScheduleDate = new Date(newSchedule.scheduled_date);
+      const newScheduleStartTime = new Date(newSchedule.start_time);
+      const newScheduleEndTime = new Date(newSchedule.end_time);
+
+      console.log('newScheduleDate:', newScheduleDate);
+      console.log('newScheduleStartTime:', newScheduleStartTime);
+      console.log('newScheduleEndTime:', newScheduleEndTime);
+
+      const staffDetails = await this.prisma.staff.findUnique({
+        where: {
+          s_id: s_id
+        },
+        select: {
+          schedules: true,
+          appointments: true,
+          treatments: true
+        }
+      });
+
+      if (!staffDetails) {
+        throw new Error("Staff does not exist");
+      }
+
+      // Filter by date
+      const formattedNewScheduleDate = newScheduleDate.toISOString().split('T')[0];
+      const combinedEvents = [
+        ...staffDetails.schedules,
+        ...staffDetails.appointments,
+        ...staffDetails.treatments
+      ].map(e => ({
+        ...e,
+        start_time: new Date(e.start_time),
+        end_time: new Date(e.end_time)
+      })).filter(e => e.start_time.toISOString().split('T')[0] === formattedNewScheduleDate);
+
+      // Check for schedule clashes
+      combinedEvents.forEach(element => {
+        if (
+          (newScheduleStartTime >= element.start_time && newScheduleStartTime < element.end_time) ||
+          (newScheduleEndTime > element.start_time && newScheduleEndTime <= element.end_time) ||
+          (newScheduleStartTime <= element.start_time && newScheduleEndTime >= element.end_time)
+        ) {
+          throw new Error("Schedule clash detected with existing schedules, appointments, or treatments");
+        }
+      });
+
+      // Create the schedule if no clashes are found
+      await this.prisma.schedules.create({
+        data: {
+          s_id: s_id,
+          scheduled_date: newSchedule.scheduled_date,
+          start_time: newSchedule.start_time,
+          end_time: newSchedule.end_time,
+          description: newSchedule.description
+        }
+      });
+
+      return "Schedule created successfully.";
+    } catch (error) {
+      console.error("Failed to create staff schedule: ", error);
+      throw new Error("Failed to create staff schedule: " + error.message);
     }
   }
 

@@ -49,6 +49,7 @@ export class StaffController {
   // done
   @Patch('update-schedule/:id')
   updateStaffSchedule(@Param('id') id: string, @Body() schedules: schedules) {
+    console.log('id', id);
     return this.staffService.updateStaffSchedule(+id, schedules);
   }
 
@@ -61,7 +62,6 @@ export class StaffController {
   @Get('view-staff-schedule-by-date/:id/:schedule_date')
   viewStaffScheduleByDate(@Param('id') id: number, @Param('schedule_date') schedule_date: string) {
     try {
-
       const schedule_date_converted = new Date(schedule_date);
       schedule_date_converted.setMinutes(schedule_date_converted.getMinutes() - schedule_date_converted.getTimezoneOffset());
       if (isNaN(schedule_date_converted.getTime())) {
@@ -102,5 +102,10 @@ export class StaffController {
   @Get('/profile/:id')
   getStaffProfile(@Param('id') id: number){
     return this.staffService.getStaffProfile(+id);
+  }
+
+  @Post('add-new-schedule/:s_id')
+  addNewSchedule(@Param('s_id') id :number ,@Body() schedules: schedules) {
+    return this.staffService.createStaffSchedule(+id , schedules);
   }
 }
