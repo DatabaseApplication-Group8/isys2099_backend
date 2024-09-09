@@ -1,0 +1,108 @@
+-- USERS
+CREATE INDEX idx_fName ON users (Fname);
+CREATE INDEX idx_lName ON users (Lname);
+CREATE FULLTEXT INDEX idx_fullName ON users (Fname, Minit, Lname);
+ 
+-- PATIENTS
+CREATE INDEX idx_p_id ON patients (p_id);
+ 
+-- STAFF
+CREATE INDEX idx_s_id ON staff (s_id);
+ 
+-- TREATEMENTS
+CREATE INDEX idx_p_id ON treatments (p_id);
+CREATE INDEX idx_doctor_id ON treatments (doctor_id);
+ 
+-- APPOINTMENTS
+CREATE INDEX idx_p_id ON appointments (p_id);
+CREATE INDEX idx_s_id ON appointments (s_id);
+ 
+-- SCHEDULES
+CREATE INDEX idx_s_id ON schedules (s_id);
+ 
+-- JOBS_HISTORY
+# tạo partition cho jobs history dựa trên năm
+ 
+-- DEPARTMENTS
+CREATE FULLTEXT INDEX idx_dept_name ON departments (dept_name);
+
+-- REPORTS
+ALTER TABLE reports ADD INDEX idx_performance (performance);
+
+-- PARTITIONS FOR STAFF
+ALTER TABLE staff
+ADD COLUMN salary_int INT;
+
+UPDATE staff
+SET salary_int = ROUND(salary);
+
+PARTITION BY RANGE (salary) (
+    PARTITION p_intern VALUES LESS THAN (1000),
+    PARTITION p_fresher VALUES LESS THAN (5000),
+    PARTITION p_intermediate VALUES LESS THAN (10000),
+    PARTITION p_manager VALUES LESS THAN (10000),
+    PARTITION p_director VALUES LESS THAN MAXVALUE
+);
+ 
+-- PARTITIONS FOR TREATMENTS
+ALTER TABLE treatments
+ADD COLUMN billing_int INT;
+
+UPDATE treatments
+SET billing_int = ROUND(billing);
+
+ALTER TABLE treaments
+PARTITION BY RANGE (billing) (
+    PARTITION p_cheap VALUES LESS THAN (1000),
+    PARTITION p_fair VALUES LESS THAN (5000),
+    PARTITION p_expensive VALUES LESS THAN (10000),
+    PARTITION p_luxury VALUES LESS THAN MAXVALUE
+);
+
+-- PARTITIONS FOR APPOINTMENTS
+ALTER TABLE appointments 
+PARTITION BY RANGE (DAYOFWEEK(meeting_date)) (
+    PARTITION p_sun VALUES LESS THAN (2),
+    PARTITION p_mon VALUES LESS THAN (3),
+    PARTITION p_tue VALUES LESS THAN (4),
+    PARTITION p_wed VALUES LESS THAN (5),
+    PARTITION p_thu VALUES LESS THAN (6),
+    PARTITION p_fri VALUES LESS THAN (7),
+    PARTITION p_sat VALUES LESS THAN (8)
+);
+-- PARTITIONS FOR TREATMENTS
+ALTER TABLE treatments 
+PARTITION BY RANGE (MONTH(treatment_date)) (
+    PARTITION p_jan VALUES LESS THAN (2),
+    PARTITION p_feb VALUES LESS THAN (3),
+    PARTITION p_mar VALUES LESS THAN (4),
+    PARTITION p_apr VALUES LESS THAN (5),
+    PARTITION p_may VALUES LESS THAN (6),
+    PARTITION p_jun VALUES LESS THAN (7),
+    PARTITION p_jul VALUES LESS THAN (8),
+    PARTITION p_aug VALUES LESS THAN (9),
+    PARTITION p_sep VALUES LESS THAN (10),
+    PARTITION p_oct VALUES LESS THAN (11),
+    PARTITION p_nov VALUES LESS THAN (12),
+    PARTITION p_dec VALUES LESS THAN (13)
+);
+-- PARTITIONS FOR SCHEDULES
+ALTER TABLE schedules 
+PARTITION BY RANGE (DAYOFWEEK(scheduled_date)) (
+    PARTITION p_sun VALUES LESS THAN (2),
+    PARTITION p_mon VALUES LESS THAN (3),
+    PARTITION p_tue VALUES LESS THAN (4),
+    PARTITION p_wed VALUES LESS THAN (5),
+    PARTITION p_thu VALUES LESS THAN (6),
+    PARTITION p_fri VALUES LESS THAN (7),
+    PARTITION p_sat VALUES LESS THAN (8)
+);
+ 
+-- PARTITIONS FOR JOB HISTORY
+ALTER TABLE job_history 
+PARTITION BY RANGE (YEAR(start_date)) (
+    PARTITION p_genx VALUES LESS THAN (1980),
+    PARTITION p_geny VALUES LESS THAN (2000),
+    PARTITION p_genz VALUES LESS THAN (2020),
+    PARTITION p_gena VALUES LESS THAN MAXVALUE
+);
