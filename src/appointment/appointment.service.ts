@@ -9,10 +9,18 @@ import {
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Prisma, appointments } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+import { AppointmentNote } from './schemas/appointmentNote.schema';
+import { Model } from 'mongoose';
+import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 
 @Injectable()
 export class AppointmentService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    @InjectModel(AppointmentNote.name)
+    private appointmentNoteModel: Model<AppointmentNote>,
+  ) {}
   async create(createAppointmentDto: CreateAppointmentDto) {
     const meeting_date = createAppointmentDto.meeting_date;
     const startTime: string = createAppointmentDto.start_time.toString();
@@ -277,9 +285,12 @@ export class AppointmentService {
     }
   }
 
-  async findAppointmentsByDateRange(s_id: number, meeting_date : Date): Promise<appointments[]> {
+  async findAppointmentsByDateRange(
+    s_id: number,
+    meeting_date: Date,
+  ): Promise<appointments[]> {
     try {
-      console.log("meeting_date: ", meeting_date);
+      console.log('meeting_date: ', meeting_date);
       const appointments = await this.prismaService.appointments.findMany({
         where: {
           s_id: s_id,
@@ -288,7 +299,49 @@ export class AppointmentService {
       });
       return appointments;
     } catch (error) {
-      throw new Error(`Failed to retrieve treatments within the date range: ${error.message}`);
+      throw new Error(
+        `Failed to retrieve treatments within the date range: ${error.message}`,
+      );
     }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  async createNote(createAppointmentNote: CreateAppointmentNoteDto) {
+    const { a_id, before, during, after } = createAppointmentNote;
+    const note = await this.appointmentNoteModel.create({
+      a_id,
+      before,
+      during,
+      after,
+    });
+
+    return note;
+  }
+
+  async findNoteByAppointmentId(id: string) {
+    const note = await this.appointmentNoteModel.findOne({
+      a_id: id,
+    });
+    return note;
   }
 }

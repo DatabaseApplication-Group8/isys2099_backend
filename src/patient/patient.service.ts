@@ -2,12 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Patient } from './schemas/patient.schema';
+import { Model } from 'mongoose';
+import { CreatePatientMongoDBDto } from './dto/create-patient-mongodb.dto';
 
 @Injectable()
 export class PatientService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @InjectModel(Patient.name) private patientModel: Model<Patient>,
+  ) {}
   async create(createPatientDto: CreatePatientDto) {
-    
     const newPatient = await this.prisma.patients.create({
       data: createPatientDto,
     });
@@ -66,7 +72,7 @@ export class PatientService {
             sex: true,
             birth_date: true,
             pw: false, // Ensure that pw is not selected
-            patients: true
+            patients: true,
           },
         },
       },
@@ -89,5 +95,34 @@ export class PatientService {
 
   remove(id: number) {
     return `This action removes a #${id} patient`;
+  }
+
+
+
+
+
+  
+
+  async createPatientNote(
+    createPatientMongoDBDto: CreatePatientMongoDBDto,
+    diag_img: string[],
+  ) {
+    const { p_id, d_id, d_notes, lab_result } = createPatientMongoDBDto;
+
+    const patientNote = await this.patientModel.create({
+      p_id,
+      d_id,
+      d_notes,
+      diag_img,
+      lab_result,
+    });
+    return patientNote;
+  }
+
+  async getPatientMongoDb(id: string) {
+    const patient = await this.patientModel.find({
+      p_id: id,
+    });
+    return patient;
   }
 }

@@ -1,9 +1,12 @@
 import { schedules } from '@prisma/client';
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { CreateStaffMongoDBDto } from './dto/create-staff-mongodb.dto';
+import { diskStorage } from 'multer';
 
 
 // Use Case
@@ -60,20 +63,29 @@ export class StaffController {
   }
 
   @Get('view-staff-schedule-by-date/:id/:schedule_date')
-  viewStaffScheduleByDate(@Param('id') id: number, @Param('schedule_date') schedule_date: string) {
+  viewStaffScheduleByDate(
+    @Param('id') id: number,
+    @Param('schedule_date') schedule_date: string,
+  ) {
     try {
       const schedule_date_converted = new Date(schedule_date);
-      schedule_date_converted.setMinutes(schedule_date_converted.getMinutes() - schedule_date_converted.getTimezoneOffset());
+      schedule_date_converted.setMinutes(
+        schedule_date_converted.getMinutes() -
+          schedule_date_converted.getTimezoneOffset(),
+      );
       if (isNaN(schedule_date_converted.getTime())) {
         throw new BadRequestException('Invalid date');
       }
-      
-      return this.staffService.viewStaffScheduleByDate(+id, schedule_date_converted);
+
+      return this.staffService.viewStaffScheduleByDate(
+        +id,
+        schedule_date_converted,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
-  
+
   @Get('list-staff-exclude-current-user/:id')
   listStaffExludeCurrentUser(@Param('id') s_id: number) {
     return this.staffService.listStaffExludeCurrentUser(+s_id);
@@ -100,12 +112,58 @@ export class StaffController {
   }
 
   @Get('/profile/:id')
-  getStaffProfile(@Param('id') id: number){
+  getStaffProfile(@Param('id') id: number) {
     return this.staffService.getStaffProfile(+id);
   }
 
   @Post('add-new-schedule/:s_id')
-  addNewSchedule(@Param('s_id') id :number ,@Body() schedules: schedules) {
-    return this.staffService.createStaffSchedule(+id , schedules);
+  addNewSchedule(@Param('s_id') id: number, @Body() schedules: schedules) {
+    return this.staffService.createStaffSchedule(+id, schedules);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  @Post('/mongodb')
+  @UseInterceptors(
+    FilesInterceptor('certificates', 10, {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${Date.now()}-${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  createStaffMongoDb(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() createStaffMongoDBDto: CreateStaffMongoDBDto,
+  ) {
+    const filesName = files.map(
+      (file) => file.destination + '/' + file.filename,
+    );
+    return this.staffService.createStaffMongoDb(
+      createStaffMongoDBDto,
+      filesName,
+    );
+  }
+
+  @Get('/mongodb/:id')
+  getStaffMongoDb(@Param('id') id: string) {
+    return this.staffService.getStaffMongoDb(id);
   }
 }

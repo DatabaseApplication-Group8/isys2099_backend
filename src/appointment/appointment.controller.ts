@@ -4,6 +4,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
+import { CreateAppointmentNoteDto } from './dto/create-appointment-note.dto';
 
 @Controller('appointment')
 @ApiTags('Appointment')
@@ -34,13 +35,18 @@ export class AppointmentController {
     return this.appointmentService.cancel(updateAppointmentDto);
   }
 
-
   @Get('/by-date-range/:s_id/:meeting_date')
-  async findByDateRange(@Param('s_id') s_id: number , @Param('meeting_date') meeting_date: string) {
+  async findByDateRange(
+    @Param('s_id') s_id: number,
+    @Param('meeting_date') meeting_date: string,
+  ) {
     try {
       // console.log("meeting_date: ", meeting_date);
       const meeting_date_converted = new Date(meeting_date);
-      meeting_date_converted.setMinutes(meeting_date_converted.getMinutes() - meeting_date_converted.getTimezoneOffset());
+      meeting_date_converted.setMinutes(
+        meeting_date_converted.getMinutes() -
+          meeting_date_converted.getTimezoneOffset(),
+      );
 
       // console.log("meeting_date: ", meeting_date);
       // Validate that both dates are valid and that startDate is not later than endDate
@@ -48,11 +54,43 @@ export class AppointmentController {
         throw new BadRequestException('Invalid date');
       }
 
-
-
-      return this.appointmentService.findAppointmentsByDateRange(+s_id,meeting_date_converted);
+      return this.appointmentService.findAppointmentsByDateRange(
+        +s_id,
+        meeting_date_converted,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  @Post('/note')
+  createNote(@Body() createAppointmentNoteDto: CreateAppointmentNoteDto) {
+    return this.appointmentService.createNote(createAppointmentNoteDto);
+  }
+
+  @Get('/note/:id')
+  findNoteByAppointmentId(@Param('id') id: string) {
+    return this.appointmentService.findNoteByAppointmentId(id);
   }
 }
