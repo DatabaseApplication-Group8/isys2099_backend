@@ -281,7 +281,7 @@ export class AppointmentService {
       a_id: id,
     });
     return note;
-
+  }
     
   async findTreatmentsByDateRange(start_date: Date, end_date: Date): Promise<appointments[]> {
     try {

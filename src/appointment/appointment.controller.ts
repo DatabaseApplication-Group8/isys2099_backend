@@ -43,7 +43,7 @@ export class AppointmentController {
   @Get('/note/:id')
   findNoteByAppointmentId(@Param('id') id: string){
     return this.appointmentService.findNoteByAppointmentId(id);
-
+  }
 
   @Get('/by-date-range/:start/:end')
   async findByDateRange(@Param('start') start: string, @Param('end') end: string) {

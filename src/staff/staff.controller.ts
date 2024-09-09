@@ -116,6 +116,7 @@ export class StaffController {
   getStaffMongoDb(@Param('id') id: string){
     return this.staffService.getStaffMongoDb(id);
 
+  }
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.staffService.remove(+id);
